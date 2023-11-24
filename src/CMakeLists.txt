@@ -1,0 +1,1 @@
+add_c_program(blink)
