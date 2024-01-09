@@ -30,6 +30,8 @@
 #include <string.h>
 #include <pico/stdlib.h>
 
+#include <stdio.h>
+
 #ifdef NMBS_DEBUG
 #include <stdio.h>
 #define NMBS_DEBUG_PRINT(...) printf(__VA_ARGS__)
@@ -205,6 +207,7 @@ static nmbs_error recv(nmbs_t* nmbs, uint16_t count) {
 
 
 static nmbs_error send(nmbs_t* nmbs, uint16_t count) {
+    NMBS_DEBUG_PRINT("Sending %d bytes\n", count);
     int32_t ret = nmbs->platform.write(nmbs->msg.buf, count, nmbs->byte_timeout_ms, nmbs->platform.arg);
 
     if (ret == count)
@@ -237,6 +240,8 @@ static nmbs_error recv_msg_footer(nmbs_t* nmbs) {
             return NMBS_ERROR_CRC;
     }
 
+    NMBS_DEBUG_PRINT("RECEIVED FOOTER\n");
+
     return NMBS_ERROR_NONE;
 }
 
@@ -262,19 +267,12 @@ static nmbs_error recv_msg_header(nmbs_t* nmbs, bool* first_byte_received) {
 
         nmbs->msg.unit_id = get_1(nmbs);
 
-        int *led = (int *) nmbs->platform.arg;
-
         err = recv(nmbs, 1);
-
-//        if (err == NMBS_ERROR_TIMEOUT)
-//            gpio_put(*led, 0);
 
         if (err != NMBS_ERROR_NONE)
             return err;
 
         nmbs->msg.fc = get_1(nmbs);
-
-//        gpio_put(*led, 0);
     }
 
 
@@ -665,7 +663,6 @@ nmbs_error recv_write_file_record_res(nmbs_t* nmbs, uint16_t file_number, uint16
 #if !defined(NMBS_SERVER_READ_COILS_DISABLED) || !defined(NMBS_SERVER_READ_DISCRETE_INPUTS_DISABLED)
 static nmbs_error handle_read_discrete(nmbs_t* nmbs,
                                        nmbs_error (*callback)(uint16_t, uint16_t, nmbs_bitfield, uint8_t, void*)) {
-    int *led = (int *) nmbs->platform.arg;
 
     nmbs_error err = recv(nmbs, 4);
     if (err != NMBS_ERROR_NONE)
@@ -1393,7 +1390,6 @@ static nmbs_error handle_read_write_registers(nmbs_t* nmbs) {
 static nmbs_error handle_req_fc(nmbs_t* nmbs) {
     NMBS_DEBUG_PRINT("fc %d\t", nmbs->msg.fc);
 
-    int *led = (int *) nmbs->platform.arg;
     nmbs_error err;
     switch (nmbs->msg.fc) {
 #ifndef NMBS_SERVER_WRITE_MULTIPLE_COILS_DISABLED
@@ -1487,7 +1483,6 @@ nmbs_error nmbs_server_create(nmbs_t* nmbs, uint8_t address_rtu, const nmbs_plat
 
 nmbs_error nmbs_server_poll(nmbs_t* nmbs) {
     msg_state_reset(nmbs);
-    int *led = (int *) nmbs->platform.arg;
 
     bool first_byte_received = false;
     nmbs_error err = recv_req_header(nmbs, &first_byte_received);
@@ -1511,7 +1506,6 @@ nmbs_error nmbs_server_poll(nmbs_t* nmbs) {
 
     err = handle_req_fc(nmbs);
     if (err != NMBS_ERROR_NONE && !nmbs_error_is_exception(err)) {
-//        gpio_put(*led, 0);
         if (nmbs->platform.transport == NMBS_TRANSPORT_RTU && err != NMBS_ERROR_TIMEOUT && nmbs->msg.ignored) {
             // Flush the remaining data on the line
             nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, nmbs->platform.arg);
