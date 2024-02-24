@@ -1,43 +1,46 @@
 #ifndef POWERSUPPLY_HPP
 #define POWERSUPPLY_HPP
 
-class PowerSupply {
+#include "PowerSupplyInterface.hpp"
+#include <cstdint>
+
+class PowerSupply : public PowerSupplyInterface {
 
 public:
 
-    uint16_t readCurrent() {
+    uint16_t readCurrent() override {
         return 100;
     }
 
-    uint16_t readVoltage() {
+    uint16_t readVoltage() override {
         return 100;
     }
 
-    bool isRemote() {
+    bool isRemote() override {
         return 1;
     }
 
-    bool isPowerCircuitOn() {
+    bool isPowerCircuitOn() override {
         return 0;
     }
 
-    bool readPolarity() {
+    bool readPolarity() override {
         return 0;
     }
 
-    bool readReset() {
+    bool readReset() override {
         return 0;
     }
 
-    uint8_t readErrors() {
+    uint8_t readErrors() override {
         return 0;
     }
 
-    int setCurrent(uint16_t register) {
+    int setCurrent(uint16_t registerIdx) override {
         return 1;
     }
 
-    int setStatus(uint8_t dataType, bool value) {
+    int setStatus(uint8_t dataType, bool value) override {
 
         switch (dataType) {
             case 0:
@@ -56,12 +59,9 @@ public:
         return 1;
     }
 
-    void setPowerCircuit(bool st) {
+    void setPowerCircuit(bool st) override {
 
     }
-
-    static const int currentReadBits = 12;
-    static const int voltageReadBits = 12;
 };
 
 #endif //POWERSUPPLY_HPP
