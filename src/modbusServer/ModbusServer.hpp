@@ -1,21 +1,19 @@
 #ifndef ZPP_CYCLOTRON_MODBUSSERVER_H
 #define ZPP_CYCLOTRON_MODBUSSERVER_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <map>
 #include <string>
 #include <memory>
 #include "../powerSupply/PowerSupply.hpp"
 #include "../picoController/PicoControllerInterface.hpp"
 
-using namespace std;
-
 static const uint8_t REGISTERS_READ_SIZE = 2;
 static const uint8_t REGISTERS_WRITE_SIZE = 1;
 static const uint8_t COILS_WRITE_COUNT = 3;
 static const uint8_t RTU_SERVER_ADDRESS = 1;
 
-static unique_ptr<PowerSupplyInterface> powerSupply; // TODO find a way to make this variable local.
+static std::unique_ptr<PowerSupplyInterface> powerSupply; // TODO find a way to make this variable local.
 
 class ModbusServer {
 
@@ -24,7 +22,7 @@ private:
     static const bool ENABLE = true;
     static const bool DISABLE = false;
 
-    shared_ptr<PicoControllerInterface> picoController;
+    std::shared_ptr<PicoControllerInterface> picoController;
 
     nmbs_t nmbs;
 
@@ -80,7 +78,7 @@ private:
 
 public:
 
-    ModbusServer(unique_ptr<PowerSupplyInterface> powerSupplyArg, shared_ptr<PicoControllerInterface> picoController);
+    ModbusServer(std::unique_ptr<PowerSupplyInterface> powerSupplyArg, const std::shared_ptr <PicoControllerInterface> &picoController);
 
     void waitAndHandleRequest();
 

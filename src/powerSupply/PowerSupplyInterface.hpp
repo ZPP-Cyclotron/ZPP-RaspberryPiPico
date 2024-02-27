@@ -19,7 +19,7 @@ public:
 
     virtual uint8_t readErrors() = 0;
 
-    virtual int setCurrent(uint16_t registerIdx) = 0;
+    virtual int setCurrent(uint16_t newCurrent) = 0;
 
     virtual int setStatus(uint8_t dataType, bool value) = 0;
 

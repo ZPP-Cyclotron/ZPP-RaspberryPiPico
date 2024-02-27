@@ -3,8 +3,6 @@
 #include <vector>
 #include <iostream>
 
-using namespace std;
-
 static int32_t mockReadSerialStdin(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
 
     vector <uint8_t> mockRequest = ((vector <vector<uint8_t>> *) arg)[0];
@@ -46,7 +44,7 @@ void MockPicoController::mockAssignReadAndWriteToModbus(nmbs_platform_conf &plat
 }
 
 
-MockPicoController::MockPicoController(string &request, string &response) {
+MockPicoController::MockPicoController(std::string &request, std::string &response) {
     this->request = request;
     this->response = response;
 

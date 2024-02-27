@@ -6,37 +6,46 @@
 
 class PowerSupply : public PowerSupplyInterface {
 
+    uint16_t current = 100;
+    uint16_t voltage = 100;
+    bool remote = true;
+    bool isOn = true;
+    bool polarity = false;
+    bool reset = false;
+    uint8_t errors = 0;
+
 public:
 
     uint16_t readCurrent() override {
-        return 100;
+        return current;
     }
 
     uint16_t readVoltage() override {
-        return 100;
+        return voltage;
     }
 
     bool isRemote() override {
-        return 1;
+        return remote;
     }
 
     bool isPowerCircuitOn() override {
-        return 0;
+        return isOn;
     }
 
     bool readPolarity() override {
-        return 0;
+        return polarity;
     }
 
     bool readReset() override {
-        return 0;
+        return reset;
     }
 
     uint8_t readErrors() override {
-        return 0;
+        return errors;
     }
 
-    int setCurrent(uint16_t registerIdx) override {
+    int setCurrent(uint16_t newCurrent) override {
+        current = newCurrent;
         return 1;
     }
 
@@ -47,10 +56,10 @@ public:
                 setPowerCircuit(value);
                 break;
             case 1:
-                // polarity
+                polarity = value;
                 break;
             case 2:
-                // reset
+                reset = value;
                 break;
             default:
                 return -1;
@@ -60,7 +69,7 @@ public:
     }
 
     void setPowerCircuit(bool st) override {
-
+        isOn = st;
     }
 };
 

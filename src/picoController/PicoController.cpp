@@ -1,5 +1,6 @@
 #include "PicoController.hpp"
 #include <unistd.h>
+#include <cstdio>
 
 static int32_t read_serial_stdin(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
 
@@ -15,6 +16,11 @@ static int32_t read_serial_stdin(uint8_t *buf, uint16_t count, int32_t byte_time
 static int32_t write_serial_stdout(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
 //        if (count != 8)
 //            printf("Wrong bytes count: %d\n", count);
+
+    if (count != 9)
+        gpio_put(PicoController::LED_PIN, 0);
+
+    fflush(stdout);
 
     if (write(STDOUT_FILENO, buf, count) < 0)
         return -1;

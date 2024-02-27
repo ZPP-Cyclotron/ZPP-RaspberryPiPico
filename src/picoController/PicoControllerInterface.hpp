@@ -16,6 +16,8 @@ public:
 
     virtual void onError() = 0;
 
+    virtual void onErrorWithMsg(const char errMsg[]) = 0;
+
     virtual void assign_read_and_write_to_modbus(nmbs_platform_conf &platform_conf) = 0;
 
 };
