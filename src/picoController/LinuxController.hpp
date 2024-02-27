@@ -7,8 +7,8 @@
 
 class LinuxController : public PicoControllerInterface {
 public:
-    static const int READ_TIMEOUT = 1; // seconds
-    static constexpr const char serialPort[] = "dev/ttyS0";
+    static const int READ_TIMEOUT = 1000; // miliseconds
+    static constexpr const char serialPort[] = "/dev/pts/2";
 
     void onError() override {
         perror("Modbus error\n");
