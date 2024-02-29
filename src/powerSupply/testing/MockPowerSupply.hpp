@@ -4,7 +4,9 @@
 #include "../PowerSupplyInterface.hpp"
 #include <gmock/gmock.h>
 
-class MockPowerSupply : PowerSupplyInterface {
+class MockPowerSupply : public PowerSupplyInterface {
+
+public:
 
     MOCK_METHOD(uint16_t, readCurrent, (), (override));
 

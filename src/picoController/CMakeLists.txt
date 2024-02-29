@@ -16,4 +16,6 @@ else ()
 
 
     target_link_libraries(linuxController nanomodbus)
+
+    add_subdirectory(testing)
 endif ()

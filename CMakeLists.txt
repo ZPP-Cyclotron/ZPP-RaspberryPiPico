@@ -6,9 +6,7 @@ set(EXAMPLES OFF)
 if (NOT LINUX_VERSION)
     include(pico_sdk_import.cmake)
 else ()
-    if(EXISTS "${CMAKE_BINARY_DIR}/pico-sdk")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/pico-sdk")
-    endif()
+    include(google_test_import.cmake)
 endif ()
 
 project(ZPP-RaspberryPiPico C CXX ASM)
@@ -25,3 +23,7 @@ add_compile_options(-Wall
 )
 
 add_subdirectory(src)
+
+if (LINUX_VERSION)
+#    add_subdirectory(tests)
+endif ()
