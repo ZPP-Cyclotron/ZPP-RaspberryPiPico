@@ -1,9 +1,12 @@
 #ifndef ZPP_CYCLOTRON_POWERSUPPLYINTERFACE_HPP
 #define ZPP_CYCLOTRON_POWERSUPPLYINTERFACE_HPP
 
+enum class PowerSupplyParameter { IS_ON = 0, POLARITY = 1, RESET = 2, CURRENT = 3 };
+
 class PowerSupplyInterface {
 
 public:
+    virtual ~PowerSupplyInterface() = default;
 
     virtual uint16_t readCurrent() = 0;
 
@@ -19,11 +22,7 @@ public:
 
     virtual uint8_t readErrors() = 0;
 
-    virtual int setCurrent(uint16_t newCurrent) = 0;
-
-    virtual int setStatus(uint8_t dataType, bool value) = 0;
-
-    virtual void setPowerCircuit(bool st) = 0;
+    virtual int setStatus(uint8_t dataType, uint16_t value) = 0;
 
     static const int currentReadBits = 12;
     static const int voltageReadBits = 12;

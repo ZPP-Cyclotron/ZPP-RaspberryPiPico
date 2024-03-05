@@ -1,15 +1,34 @@
 #include "../src/modbusServer/ModbusServer.hpp"
-#include "../src/picoController/LinuxController.hpp"
+#include "../src/picoController/testing/MockPicoController.hpp"
 #include "../src/powerSupply/testing/MockPowerSupply.hpp"
 #include <gtest/gtest.h>
 #include <vector>
+#include <memory>
 
-static const std::string slaveAddr = "01";
-static const std::string modbusReadRegisters = "04";
 
-TEST(ModbusSlaveTest, RespondsToCorrectReadRequest) {
-    std::unique_ptr<MockPowerSupply> mockPowerSupply;
+const std::string slaveAddr = "01";
+const std::string modbusReadRegisters = "04";
+const std::string modbusWriteCoils = "0F";
 
+const std::string correctReadRequest = slaveAddr
+                                       + modbusReadRegisters
+                                       + "0000" // Address of first register to be read.
+                                       + "0002" // Number of registers to be read.
+                                       + "71CB"; // CRC
+
+const std::string correctWriteCurrentResponse = slaveAddr
+                                                + modbusWriteCoils
+                                                + "0000" // Address of first coil to be written.
+                                                + "0012" // Quantity of coils.
+                                                + "D5C6"; // CRC
+
+const std::string correctSwitchOnOffResponse = slaveAddr
+                                               + modbusWriteCoils
+                                               + "0000" // Address of first coil to be written.
+                                               + "0003" // Quantity of coils.
+                                               + "15CA";
+
+TEST(ModbusServerTest, RespondsToCorrectReadRequest) {
     uint16_t current = std::stoi("FFF", nullptr, 16);
     uint16_t voltage = std::stoi("FFF", nullptr, 16);
     bool isOn = 1;
@@ -18,32 +37,85 @@ TEST(ModbusSlaveTest, RespondsToCorrectReadRequest) {
     bool remote = 1;
     uint8_t errors = std::stoi("F", nullptr, 16);
 
-    EXPECT_CALL(*mockPowerSupply, readCurrent()).Times(1).WillOnce(testing::Return(current));
-    EXPECT_CALL(*mockPowerSupply, readVoltage()).Times(1).WillOnce(testing::Return(voltage));
-    EXPECT_CALL(*mockPowerSupply, isPowerCircuitOn()).Times(1).WillOnce(testing::Return(isOn));
-    EXPECT_CALL(*mockPowerSupply, readPolarity()).Times(1).WillOnce(testing::Return(polarity));
-    EXPECT_CALL(*mockPowerSupply, readReset()).Times(1).WillOnce(testing::Return(reset));
-    EXPECT_CALL(*mockPowerSupply, isRemote()).Times(1).WillOnce(testing::Return(remote));
-    EXPECT_CALL(*mockPowerSupply, readErrors()).Times(1).WillOnce(testing::Return(errors));
-
-    std::string request = slaveAddr
-                    + modbusReadRegisters
-                    + "0000" // Address of first register to be read.
-                    + "0002" // Number of registers to be read.
-                    + "71CB"; // CRC
-
+    std::unique_ptr<MockPowerSupply> mockPowerSupply = std::make_unique<MockPowerSupply>(current, voltage, isOn,
+                                                                                         polarity, reset, remote,
+                                                                                         errors);
     std::string response = slaveAddr
-                    + modbusReadRegisters
-                    + "04" // Byte count
-                    + "FFFF" // Register 0
-                    + "FFFF" // Register 1
-                    + "FA10"; // CRC
+                           + modbusReadRegisters
+                           + "04" // Byte count
+                           + "FFFF" // Register 0
+                           + "FFFF" // Register 1
+                           + "FA10"; // CRC
 
-//    std::unique_ptr<PowerSupplyInterface> powerSupply = std::move(mockPowerSupply);
-//    ModbusServer modbusServer(std::move(powerSupply), std::make_shared<LinuxController>());
+    std::string request = correctReadRequest;
+
+    auto mockPicoController = std::make_shared<MockPicoController>(request, response);
+
+    std::unique_ptr<ModbusServer> modbusServer(new ModbusServer(std::move(mockPowerSupply), mockPicoController));
+
+    modbusServer->waitAndHandleRequest();
+}
+
+class ModbusServerWriteTest
+        : public testing::TestWithParam<std::tuple<PowerSupplyParameter, int, std::string, std::string>> {
+};
+
+TEST_P(ModbusServerWriteTest, RespondsToCorrectWriteRequest) {
+    auto [dataType, value, request, response] = ModbusServerWriteTest::GetParam();
+
+    std::unique_ptr<MockPowerSupply> mockPowerSupply = std::make_unique<MockPowerSupply>(static_cast<int>(dataType),
+                                                                                         value);
+
+    auto mockPicoController = std::make_shared<MockPicoController>(request, response);
+
+    std::unique_ptr<ModbusServer> modbusServer(new ModbusServer(std::move(mockPowerSupply), mockPicoController));
+
+    modbusServer->waitAndHandleRequest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+        ModbusServerTest, ModbusServerWriteTest,
+        testing::Values(
+                std::make_tuple(PowerSupplyParameter::CURRENT, std::stoi("FFFF", nullptr, 16),
+                                slaveAddr
+                                + modbusWriteCoils
+                                + "0000" // Address of first coil to be written.
+                                + "0012" // Quantity of coils.
+                                + "03" // Byte count.
+                                + "FFFF03" // Coils' values.
+                                + "E9B4" // CRC
+                        , correctWriteCurrentResponse),
+                std::make_tuple(PowerSupplyParameter::IS_ON, 1,
+                                slaveAddr
+                                + modbusWriteCoils
+                                + "0000" // Address of first coil to be written.
+                                + "0003" // Quantity of coils.
+                                + "01" // Byte count.
+                                + "04" //Coils' values.
+                                + "8E94" // CRC
+                        , correctSwitchOnOffResponse),
+                std::make_tuple(PowerSupplyParameter::POLARITY, 1,
+                                slaveAddr
+                                + modbusWriteCoils
+                                + "0000" // Address of first coil to be written.
+                                + "0003" // Quantity of coils.
+                                + "01" // Byte count.
+                                + "05" //Coils' values.
+                                + "4F54" // CRC
+                        , correctSwitchOnOffResponse),
+                std::make_tuple(PowerSupplyParameter::RESET, 1,
+                                slaveAddr
+                                + modbusWriteCoils
+                                + "0000" // Address of first coil to be written.
+                                + "0003" // Quantity of coils.
+                                + "01" // Byte count.
+                                + "06" //Coils' values.
+                                + "0F55" // CRC
+                        , correctSwitchOnOffResponse)
+        ));
 
 
-    ModbusServer modbusServer(std::move(mockPowerSupply), std::make_shared<LinuxController>());
-
-//    modbusServer.waitAndHandleRequest();
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

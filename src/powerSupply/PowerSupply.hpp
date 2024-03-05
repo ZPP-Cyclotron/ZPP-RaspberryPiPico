@@ -44,16 +44,12 @@ public:
         return errors;
     }
 
-    int setCurrent(uint16_t newCurrent) override {
-        current = newCurrent;
-        return 1;
-    }
 
-    int setStatus(uint8_t dataType, bool value) override {
+    int setStatus(uint8_t dataType, uint16_t value) override {
 
         switch (dataType) {
             case 0:
-                setPowerCircuit(value);
+               isOn = value;
                 break;
             case 1:
                 polarity = value;
@@ -61,15 +57,13 @@ public:
             case 2:
                 reset = value;
                 break;
+            case 3:
+                current = value;
             default:
                 return -1;
         }
 
         return 1;
-    }
-
-    void setPowerCircuit(bool st) override {
-        isOn = st;
     }
 };
 

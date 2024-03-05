@@ -14,6 +14,8 @@ class PicoControllerInterface {
 
 public:
 
+    virtual ~PicoControllerInterface() = default;
+
     virtual void onError() = 0;
 
     virtual void onErrorWithMsg(const char errMsg[]) = 0;

@@ -4,9 +4,20 @@
 #include "../PicoControllerInterface.hpp"
 #include <gmock/gmock.h>
 
+static const int MSG_MAX_LENGTH = 20;
+
+struct requestAndResponse {
+    uint8_t request[MSG_MAX_LENGTH];
+    uint8_t response[MSG_MAX_LENGTH];
+    int requestLength;
+    int requestIdx = 0;
+    int responseLength;
+};
+
+
 class MockPicoController : public PicoControllerInterface {
-    std::string request;
-    std::string response;
+
+    struct requestAndResponse requestAndResponse{};
 
 public:
     MockPicoController(std::string &request, std::string &response);
@@ -17,9 +28,9 @@ public:
         std::cout << errMsg;
     }
 
-    MOCK_METHOD(void, assign_read_and_write_to_modbus, (nmbs_platform_conf &platform_conf), (override));
+//    MOCK_METHOD(void, assign_read_and_write_to_modbus, (nmbs_platform_conf & platform_conf), (override));
 
-    void mockAssignReadAndWriteToModbus(nmbs_platform_conf &platform_conf);
-    };
+    void assign_read_and_write_to_modbus(nmbs_platform_conf &platform_conf) override;
+};
 
 #endif //ZPP_CYCLOTRON_MOCKPICOCONTROLLER_HPP

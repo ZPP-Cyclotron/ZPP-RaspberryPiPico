@@ -1,45 +1,47 @@
 #include "MockPicoController.hpp"
 #include <gtest/gtest.h>
-#include <vector>
 #include <iostream>
 #include <string>
 
 static int32_t mockReadSerialStdin(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
-    auto * requestResponse = (std::vector <std::vector<uint8_t>> *) arg;
-    std::vector<uint8_t> mockRequest = (*requestResponse)[0];
+    auto requestAndResponsePtr = (struct requestAndResponse *) arg;
+    auto start = requestAndResponsePtr->requestIdx;
 
-    for (int i = 0; i < count; i++) {
-        if (i == mockRequest.size())
+    for (int i = start; i < count + start; i++) {
+        if (i == requestAndResponsePtr->requestLength)
             return i;
 
-        buf[i] = mockRequest[i];
+        buf[i - start] = requestAndResponsePtr->request[i];
+        (requestAndResponsePtr->requestIdx)++;
     }
 
     return count;
 }
 
-static int32_t mockWriteSerialStdout(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
-    auto * requestResponse = (std::vector <std::vector<uint8_t>> *) arg;
-    std::vector <uint8_t> expectedResponse = (*requestResponse)[1];
-
-    std::vector<uint8_t> bufVec(buf, buf + count);
-
-    EXPECT_TRUE(bufVec == expectedResponse);
+void checkResponse(const uint8_t response[], uint16_t count, const uint8_t expectedResponse[], uint16_t expectedCount) {
+    ASSERT_TRUE(expectedCount == count);
+    for (int i = 0; i < count; i++)
+        ASSERT_TRUE(response[i] == expectedResponse[i]);
 }
 
-std::vector <uint8_t> hexToVector(std::string &s) {
+static int32_t mockWriteSerialStdout(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
+    auto requestAndResponsePtr = (struct requestAndResponse *) arg;
+
+    checkResponse(buf, count, requestAndResponsePtr->response, requestAndResponsePtr->responseLength);
+
+    return count;
+}
+
+void hexToArray(std::string &s, uint8_t *arr) {
     assert(s.length() % 2 == 0);
 
-    std::vector <uint8_t> v(s.length() / 2);
     for (int i = 0; i < s.length(); i += 2) {
-        v[i / 2] = std::stoi(s.substr(i, 2), nullptr, 16);
+        arr[i / 2] = std::stoi(s.substr(i, 2), nullptr, 16);
     }
-    return v;
 }
 
-void MockPicoController::mockAssignReadAndWriteToModbus(nmbs_platform_conf &platform_conf) {
-    std::vector <std::vector<uint8_t>> requestAndResponse = {hexToVector(this->request), hexToVector(this->response)};
-    platform_conf.arg = (void *) (&requestAndResponse);
+void MockPicoController::assign_read_and_write_to_modbus(nmbs_platform_conf &platform_conf) {
+    platform_conf.arg = &this->requestAndResponse;
 
     platform_conf.read = mockReadSerialStdin;
     platform_conf.write = mockWriteSerialStdout;
@@ -47,11 +49,20 @@ void MockPicoController::mockAssignReadAndWriteToModbus(nmbs_platform_conf &plat
 
 
 MockPicoController::MockPicoController(std::string &request, std::string &response) {
-    this->request = request;
-    this->response = response;
 
-    ON_CALL(*this, assign_read_and_write_to_modbus(testing::_)).WillByDefault(
-            [this](nmbs_platform_conf &platform_conf) { return this->mockAssignReadAndWriteToModbus(platform_conf); });
+    assert(request.length() / 2 <= MSG_MAX_LENGTH && response.length() / 2 <= MSG_MAX_LENGTH);
 
-    ON_CALL(*this, onError()).WillByDefault([this]() {std::cout<<"Modbus error\n";});
+    hexToArray(request, this->requestAndResponse.request);
+    hexToArray(response, this->requestAndResponse.response);
+
+    if (this->requestAndResponse.request[0] != 1)
+        printf("REQUEST ERROR\n");
+
+    this->requestAndResponse.requestLength = (int) request.length() / 2;
+    this->requestAndResponse.responseLength = (int) response.length() / 2;
+
+//    ON_CALL(*this, assign_read_and_write_to_modbus(testing::_)).WillByDefault(
+//            [this](nmbs_platform_conf &platform_conf) { return this->mockAssignReadAndWriteToModbus(platform_conf); });
+
+    ON_CALL(*this, onError()).WillByDefault([this]() { std::cout << "Modbus error\n"; });
 }
