@@ -59,6 +59,7 @@ public:
                 break;
             case 3:
                 current = value;
+                break;
             default:
                 return -1;
         }
