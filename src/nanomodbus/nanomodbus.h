@@ -44,6 +44,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define NMBS_SERVER_WRITE_SINGLE_REGISTER_DISABLED 1
+
 /**
  * nanoMODBUS errors.
  * Values <= 0 are library errors, > 0 are modbus exceptions.

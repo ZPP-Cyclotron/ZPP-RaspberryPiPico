@@ -25,5 +25,5 @@ add_compile_options(-Wall
 add_subdirectory(src)
 
 if (LINUX_VERSION)
-#    add_subdirectory(tests)
+    add_subdirectory(tests)
 endif ()
