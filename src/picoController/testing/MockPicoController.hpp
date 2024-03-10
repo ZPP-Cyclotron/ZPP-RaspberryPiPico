@@ -19,8 +19,14 @@ class MockPicoController : public PicoControllerInterface {
 
     struct requestAndResponse requestAndResponse{};
 
+    void checkSerialWriteCalled() const;
+
 public:
     MockPicoController(std::string &request, std::string &response);
+
+    ~MockPicoController() override {
+        checkSerialWriteCalled();
+    }
 
     MOCK_METHOD(void, onError, (), (override));
 

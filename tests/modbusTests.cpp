@@ -5,7 +5,6 @@
 #include <vector>
 #include <memory>
 
-
 const std::string slaveAddr = "01";
 const std::string modbusReadRegisters = "04";
 const std::string modbusWriteCoils = "0F";
@@ -40,7 +39,7 @@ TEST_P(ModbusServerReadTest, RespondsToCorrectReadRequest) {
     uint16_t voltage = std::stoi(voltageHex, nullptr, 16);
     uint8_t errors = std::stoi(errorsHex, nullptr, 16);
 
-    std::unique_ptr<MockPowerSupply> mockPowerSupply = std::make_unique<MockPowerSupply>(current, voltage, isOn,
+    auto mockPowerSupply = std::make_unique<MockPowerSupply>(current, voltage, isOn,
                                                                                          polarity, reset, remote,
                                                                                          errors);
     std::string request = correctReadRequest;
@@ -192,6 +191,81 @@ INSTANTIATE_TEST_SUITE_P(
                         , correctWriteOneBitValueResponse)
         ));
 
+
+class ModbusServerIncorrectRequestTest
+        : public testing::TestWithParam<std::tuple<std::string, std::string>> {
+};
+
+TEST_P(ModbusServerIncorrectRequestTest, RespondsWithErrorCode) {
+    auto [request, response] = ModbusServerIncorrectRequestTest::GetParam();
+
+    auto mockPowerSupply = std::make_unique<MockPowerSupply>(-1,0);
+
+    auto mockPicoController = std::make_shared<MockPicoController>(request, response);
+
+    std::unique_ptr<ModbusServer> modbusServer(new ModbusServer(std::move(mockPowerSupply), mockPicoController));
+
+    modbusServer->waitAndHandleRequest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+        ModbusServerTest, ModbusServerIncorrectRequestTest,
+        testing::Values(
+                std::make_tuple(
+                        "AB" // Random byte.
+                        , ""
+                ),
+                std::make_tuple(
+                        "010200000016F9C4" // Modbus function that is not handled.
+                        ,"0182018160"
+                ),
+                std::make_tuple(
+                        slaveAddr
+                        + modbusWriteCoils
+                        + "0001" // Invalid address of first coil to be written.
+                        + "0012" // Quantity of coils.
+                        + "03" // Byte count.
+                        + "FFFF03" // Coils' values.
+                        + "F974" // CRC
+                        , "018F02C5F1"
+                ),
+                std::make_tuple(
+                        slaveAddr
+                        + modbusWriteCoils
+                        + "0000" // Address of first coil to be written.
+                        + "0002" // Invalid quantity of coils.
+                        + "01" // Byte count.
+                        + "00" // Coils' values.
+                        + "DE97" // CRC
+                        , "018F02C5F1"
+                ),
+                std::make_tuple(
+                        slaveAddr
+                        + modbusWriteCoils
+                        + "0000" // Address of first coil to be written.
+                        + "0012" // Quantity of coils.
+                        + "01" // Invalid byte count.
+                        + "FFFF03" // Coils' values.
+                        + "E80C" // CRC
+                        , "" // Because CRC is invalid then.
+                ),
+                std::make_tuple(
+                        slaveAddr
+                        + modbusReadRegisters
+                        + "0001" // Invalid address of first register to be read.
+                        + "0002" // Number of registers to be read.
+                        + "200B" // CRC
+                        , "018402C2C1"
+                ),
+                std::make_tuple(
+                        slaveAddr
+                        + modbusReadRegisters
+                        + "0001" // Address of first register to be read.
+                        + "0000" // Invalid number of registers to be read.
+                        + "A1CA" // CRC
+                        , "0184030301"
+                )
+        ));
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
