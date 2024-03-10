@@ -32,7 +32,7 @@ static int32_t readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeou
             close(filedesc);
             return -1;
         } else if (rv == 0) {
-            printf("timeout\n");
+//            printf("timeout\n");
             close(filedesc);
             return 0;
         } else {
