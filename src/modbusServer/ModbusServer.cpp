@@ -38,7 +38,7 @@ nmbs_error ModbusServer::handleReadData(uint16_t address, uint16_t quantity, uin
     bool reset = powerSupply->readReset();
     bool remote = powerSupply->isRemote();
 
-    registers_out[0] =
+        registers_out[0] =
             current + (isOn << powerSupply->currentReadBits) + (polarity << (powerSupply->currentReadBits + 1)) +
             (reset << (powerSupply->currentReadBits + 2)) + (remote << (powerSupply->currentReadBits + 3));
 
@@ -60,9 +60,9 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
     uint8_t dataType = (nmbs_bitfield_read(coils, 1) << 1) + nmbs_bitfield_read(coils, 0);
 
     uint16_t value = 0 ;
-
+    
     for (int i = WRITTEN_DATA_TYPE_COILS; i < quantity; i++) {
-        value += nmbs_bitfield_read(coils, i) << (i - WRITTEN_DATA_TYPE_COILS);
+        value += nmbs_bitfield_read(coils, i) << (quantity - i - 1);
     }
 
     if (powerSupply->setStatus(dataType, value) < 0)
