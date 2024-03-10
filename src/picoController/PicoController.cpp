@@ -5,20 +5,17 @@
 static int32_t read_serial_stdin(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
 
     for (int i = 0; i < count; i++) {
-        buf[i] = getchar_timeout_us(PicoController::GET_ONE_CHAR_TIMEOUT); // TODO: Consider using stdio_set_chars_available_callback()
+        int c = getchar_timeout_us(PicoController::GET_ONE_CHAR_TIMEOUT); // TODO: Consider using stdio_set_chars_available_callback()
 
-        if (buf[i] == PicoController::ENDSTDIN)
+        if (c == PICO_ERROR_TIMEOUT || c == PicoController::ENDSTDIN)
             return i;
+
+        buf[i] = c;
     }
     return count;
 }
 
 static int32_t write_serial_stdout(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
-//        if (count != 8)
-//            printf("Wrong bytes count: %d\n", count);
-
-    if (count != 9)
-        gpio_put(PicoController::LED_PIN, 0);
 
     fflush(stdout);
 
