@@ -79,7 +79,8 @@ public:
                 break;
             case 3:
                 printf("New current value: %d\n", value);
-                current = value;
+                // Converting current unit from 200/(2^16-1) A to 200/(2^12-1) A.
+                current = value * ((2 << 11) - 1) / UINT16_MAX;
                 break;
             default:
                 return -1;
