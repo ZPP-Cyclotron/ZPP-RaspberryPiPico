@@ -126,7 +126,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 + "030000" // Coils' values.
                                 + "2875" // CRC
                         , correctWriteCurrentResponse),
-                std::make_tuple(PowerSupplyParameter::CURRENT, 36101,
+                std::make_tuple(PowerSupplyParameter::CURRENT, 41137,
                                 slaveAddr
                                 + modbusWriteCoils
                                 + "0000" // Address of first coil to be written.
