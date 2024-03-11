@@ -3,6 +3,13 @@
 #include <iostream>
 #include <string>
 
+bool writeCalled = false;
+
+void MockPicoController::checkSerialWriteCalled() const {
+    ASSERT_TRUE(writeCalled || MockPicoController::requestAndResponse.responseLength <= 0);
+    writeCalled = false;
+}
+
 static int32_t mockReadSerialStdin(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
     auto requestAndResponsePtr = (struct requestAndResponse *) arg;
     auto start = requestAndResponsePtr->requestIdx;
@@ -25,6 +32,7 @@ void checkResponse(const uint8_t response[], uint16_t count, const uint8_t expec
 }
 
 static int32_t mockWriteSerialStdout(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
+    writeCalled = true;
     auto requestAndResponsePtr = (struct requestAndResponse *) arg;
 
     checkResponse(buf, count, requestAndResponsePtr->response, requestAndResponsePtr->responseLength);
@@ -54,9 +62,6 @@ MockPicoController::MockPicoController(std::string &request, std::string &respon
 
     hexToArray(request, this->requestAndResponse.request);
     hexToArray(response, this->requestAndResponse.response);
-
-    if (this->requestAndResponse.request[0] != 1)
-        printf("REQUEST ERROR\n");
 
     this->requestAndResponse.requestLength = (int) request.length() / 2;
     this->requestAndResponse.responseLength = (int) response.length() / 2;
