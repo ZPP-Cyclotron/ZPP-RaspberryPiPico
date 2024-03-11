@@ -4,11 +4,13 @@
 #include <fcntl.h>
 #include <cstdio>
 
+int requestCounter = 0;
+
 static int32_t readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
     fd_set set;
     struct timeval timeout{};
     int rv;
-    int filedesc = open(LinuxController::serialPort, O_RDWR);
+    int filedesc = open(VIRTUAL_PORT_LINUX, O_RDWR);
 
     if (filedesc < 0) {
         perror("open");
@@ -22,7 +24,7 @@ static int32_t readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeou
     FD_SET(filedesc, &set); /* add our file descriptor to the set */
 
     timeout.tv_sec = 0;
-    timeout.tv_usec = LinuxController::READ_TIMEOUT * 1000;
+    timeout.tv_usec = LinuxController::GET_ONE_BYTE_TIMEOUT;
 
     do {
         rv = select(filedesc + 1, &set, nullptr, nullptr, &timeout);
@@ -56,7 +58,27 @@ static int32_t readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeou
 
 static int32_t writeSerialLinux(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
 
-    int filedesc = open(LinuxController::serialPort, O_RDWR);
+    requestCounter = (requestCounter + 1) % INT32_MAX;
+
+    if (ANSWERS_ONE_OF_N_REQUESTS_LINUX_TEST != 0 && requestCounter % ANSWERS_ONE_OF_N_REQUESTS_LINUX_TEST == 0) {
+        return -1;
+    }
+
+    int filedesc = open(VIRTUAL_PORT_LINUX, O_RDWR);
+
+    if (ONE_OF_N_REQUESTS_IS_RANDOM_BYTES_LINUX_TEST != 0 &&
+        requestCounter % ONE_OF_N_REQUESTS_IS_RANDOM_BYTES_LINUX_TEST == 0) {
+        write(filedesc, "HELLO", 5);
+        close(filedesc);
+        return count;
+    }
+
+    if (ERROR_RESPONSE_TO_ONE_OF_N_READ_REQUESTS_LINUX_TEST != 0 &&
+        requestCounter % ERROR_RESPONSE_TO_ONE_OF_N_READ_REQUESTS_LINUX_TEST == 0) {
+        write(filedesc, "018402C2C1", strlen("018402C2C1"));
+        close(filedesc);
+        return count;
+    }
 
     if (write(filedesc, buf, count) < 0) {
         close(filedesc);

@@ -18,7 +18,6 @@ public:
     static const int LED_PIN = PICO_DEFAULT_LED_PIN;
 
     static const uint8_t ENDSTDIN = 255;
-    static const int GET_ONE_CHAR_TIMEOUT = 1000;
 
     PicoController() {
         gpio_init(LED_PIN);

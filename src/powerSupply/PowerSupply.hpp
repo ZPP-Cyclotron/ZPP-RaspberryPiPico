@@ -2,6 +2,7 @@
 #define POWERSUPPLY_HPP
 
 #include "PowerSupplyInterface.hpp"
+#include "../../config.h"
 #include <cstdint>
 
 class PowerSupply : public PowerSupplyInterface {
@@ -63,6 +64,9 @@ public:
 
 
     int setStatus(uint8_t dataType, uint16_t value) override {
+
+    if (ILLEGAL_DATA_VALUE_LINUX_TEST)
+            return -1;
 
         switch (dataType) {
             case 0:
