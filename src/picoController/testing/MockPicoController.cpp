@@ -43,7 +43,7 @@ static int32_t mockWriteSerialStdout(const uint8_t *buf, uint16_t count, int32_t
 void hexToArray(std::string &s, uint8_t *arr) {
     assert(s.length() % 2 == 0);
 
-    for (int i = 0; i < s.length(); i += 2) {
+    for (int i = 0; i < (int) s.length(); i += 2) {
         arr[i / 2] = std::stoi(s.substr(i, 2), nullptr, 16);
     }
 }

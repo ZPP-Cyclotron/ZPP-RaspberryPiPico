@@ -2,17 +2,21 @@
 #define ZPP_CYCLOTRON_PICOCONTROLLERINTERFACE_HPP
 
 #include <cstdint>
+#include "../../config.h"
 
 extern "C" {
 #include "../nanomodbus/nanomodbus.h"
 }
 
-typedef int32_t (*read_function)(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg);
-typedef int32_t (*write_function)(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg);
-
 class PicoControllerInterface {
 
 public:
+
+#ifdef MODBUS_TIMEOUT
+    static const int GET_ONE_BYTE_TIMEOUT = MODBUS_TIMEOUT;
+#else
+    static const int GET_ONE_BYTE_TIMEOUT = 500000; // microseconds
+#endif
 
     virtual ~PicoControllerInterface() = default;
 
