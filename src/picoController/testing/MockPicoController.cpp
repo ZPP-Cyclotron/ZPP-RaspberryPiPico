@@ -10,7 +10,7 @@ void MockPicoController::checkSerialWriteCalled() const {
     writeCalled = false;
 }
 
-static int32_t mockReadSerialStdin(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
+static int32_t mockRead(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, bool first_byte_from_msg, void *arg) {
     auto requestAndResponsePtr = (struct requestAndResponse *) arg;
     auto start = requestAndResponsePtr->requestIdx;
 
@@ -31,7 +31,7 @@ void checkResponse(const uint8_t response[], uint16_t count, const uint8_t expec
         ASSERT_TRUE(response[i] == expectedResponse[i]);
 }
 
-static int32_t mockWriteSerialStdout(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
+static int32_t mockWrite(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
     writeCalled = true;
     auto requestAndResponsePtr = (struct requestAndResponse *) arg;
 
@@ -51,8 +51,8 @@ void hexToArray(std::string &s, uint8_t *arr) {
 void MockPicoController::assign_read_and_write_to_modbus(nmbs_platform_conf &platform_conf) {
     platform_conf.arg = &this->requestAndResponse;
 
-    platform_conf.read = mockReadSerialStdin;
-    platform_conf.write = mockWriteSerialStdout;
+    platform_conf.read = mockRead;
+    platform_conf.write = mockWrite;
 }
 
 
