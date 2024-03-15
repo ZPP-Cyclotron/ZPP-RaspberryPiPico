@@ -2,6 +2,9 @@
 #define CONFIG_H_IN
 
 #define MODBUS_TIMEOUT @MODBUS_TIMEOUT@
+#define BAUD_RATE @BAUD_RATE@
+#define UART_TX_PIN @UART_TX_PIN@
+#define UART_RX_PIN @UART_RX_PIN@
 
 // Only for testing:
 #define LINUX_VERSION "@LINUX_VERSION@"
