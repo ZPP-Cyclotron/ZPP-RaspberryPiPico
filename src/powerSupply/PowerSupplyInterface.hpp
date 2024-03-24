@@ -8,6 +8,8 @@ class PowerSupplyInterface {
 public:
     virtual ~PowerSupplyInterface() = default;
 
+    virtual void safeCommunicationWithPS ()=0;
+
     virtual uint16_t readCurrent() = 0;
 
     virtual uint16_t readVoltage() = 0;

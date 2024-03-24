@@ -18,6 +18,9 @@ class PowerSupply : public PowerSupplyInterface {
     uint8_t errors = 0;
 
 public:
+    void safeCommunicationWithPS () override{
+        return;
+    }
 
     uint16_t readCurrent() override {
         printf("Read power supply parameters:\n");
