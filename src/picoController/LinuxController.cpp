@@ -6,7 +6,8 @@
 
 int requestCounter = 0;
 
-static int32_t readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
+static int32_t
+readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, bool first_byte_from_msg, void *arg) {
     fd_set set;
     struct timeval timeout{};
     int rv;
@@ -27,7 +28,10 @@ static int32_t readSerialLinux(uint8_t *buf, uint16_t count, int32_t byte_timeou
     timeout.tv_usec = LinuxController::GET_ONE_BYTE_TIMEOUT;
 
     do {
-        rv = select(filedesc + 1, &set, nullptr, nullptr, &timeout);
+        if (first_byte_from_msg)
+            rv = select(filedesc + 1, &set, nullptr, nullptr, NULL);
+        else
+            rv = select(filedesc + 1, &set, nullptr, nullptr, &timeout);
 
         if (rv == -1) {
             perror("select error");

@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
 set(MODBUS_TIMEOUT 500000) # microseconds
+set(BAUD_RATE 38400) # Hz, should be 38400
+set(UART_TX_PIN 0)
+set(UART_RX_PIN 1)
+
+set(LINUX_VERSION ON)
 
 # Only for testing:
 set(VIRTUAL_PORT_LINUX "/dev/pts/3")
@@ -14,7 +19,7 @@ set(LINUX_VERSION OFF)
 set(EXAMPLES OFF)
 set(200A ON)
 
-if (NOT LINUX_VERSION )
+if (NOT LINUX_VERSION)
     include(pico_sdk_import.cmake)
 else ()
     include(google_test_import.cmake)
