@@ -5,7 +5,15 @@ set(BAUD_RATE 38400) # Hz, should be 38400
 set(UART_TX_PIN 0)
 set(UART_RX_PIN 1)
 
-set(LINUX_VERSION ON)
+set(COMMUNICATION_WITH_PS_INTERVAL 1000000) # microseconds
+
+set(LINUX_VERSION OFF)
+set(EXAMPLES OFF)
+
+# 200 - power supply model with max current 200 A
+# 100 - power supply model with max current 100 A
+# other value - mock power supply
+set(POWER_SUPPLY 200)
 
 # Only for testing:
 set(VIRTUAL_PORT_LINUX "/dev/pts/3")
@@ -15,9 +23,6 @@ set(ONE_OF_N_REQUESTS_IS_RANDOM_BYTES_LINUX_TEST 0)
 set(ERROR_RESPONSE_TO_ONE_OF_N_READ_REQUESTS_LINUX_TEST 0)
 
 configure_file (config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h @ONLY)
-set(LINUX_VERSION OFF)
-set(EXAMPLES OFF)
-set(200A ON)
 
 if (NOT LINUX_VERSION)
     include(pico_sdk_import.cmake)

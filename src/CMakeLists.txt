@@ -3,13 +3,8 @@ add_subdirectory(picoController)
 add_subdirectory(nanomodbus)
 add_subdirectory(powerSupply)
 
-if (NOT LINUX_VERSION)
-    add_executable(Main Main.cpp)
-    target_link_libraries(Main modbusServer powerSupply pico_stdlib)
-    pico_add_extra_outputs(Main)
-endif ()
+if (POWER_SUPPLY EQUAL 200)
 
-if (200A)
     add_executable(testPS testPS.cpp)
     target_link_libraries(testPS powerSupply pico_stdlib)
 
@@ -18,20 +13,22 @@ if (200A)
     pico_enable_stdio_uart(testPS 0)
 
     pico_add_extra_outputs(testPS)
+
+elseif (POWER_SUPPLY EQUAL 100)
+#    ...
+
 endif ()
 
-if (EXAMPLES)
-    add_executable(irq irq.cpp)
-    target_link_libraries(irq pico_stdlib)
-    pico_add_extra_outputs(irq)
+if (NOT LINUX_VERSION)
 
-    add_executable(blink blink.c)
-    target_link_libraries(blink pico_stdlib)
-    pico_add_extra_outputs(blink)
-endif ()
+    add_executable(Main Main.cpp)
+    target_link_libraries(Main modbusServer powerSupply pico_stdlib)
+    pico_add_extra_outputs(Main)
 
-if (LINUX_VERSION)
+else ()
+
     add_executable(LinuxMain LinuxMain.cpp)
     target_link_libraries(LinuxMain modbusServer linuxController)
+
 endif ()
 
