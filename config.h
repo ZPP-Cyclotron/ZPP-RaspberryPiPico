@@ -10,7 +10,7 @@
 #define POWER_SUPPLY 200
 
 // Only for testing:
-#define LINUX_VERSION "OFF"
+#define LINUX_VERSION "ON"
 #define VIRTUAL_PORT_LINUX "/dev/pts/3"
 #define ILLEGAL_DATA_VALUE_LINUX_TEST 0
 #define ANSWERS_ONE_OF_N_REQUESTS_LINUX_TEST 0

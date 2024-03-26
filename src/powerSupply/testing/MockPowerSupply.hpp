@@ -26,6 +26,10 @@ public:
 
     MockPowerSupply(int dataType, uint16_t value) : toBeChanged(dataType), newValue(value) {}
 
+    void safeCommunicationWithPS () override {
+        return;
+    }
+
     void checkToBeChanged() const {
         ASSERT_TRUE(toBeChanged < 0);
     }

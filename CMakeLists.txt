@@ -7,7 +7,7 @@ set(UART_RX_PIN 1)
 
 set(COMMUNICATION_WITH_PS_INTERVAL 1000000) # microseconds
 
-set(LINUX_VERSION OFF)
+set(LINUX_VERSION ON)
 set(EXAMPLES OFF)
 
 # 200 - power supply model with max current 200 A

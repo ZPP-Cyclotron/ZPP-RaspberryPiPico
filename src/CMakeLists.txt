@@ -3,23 +3,23 @@ add_subdirectory(picoController)
 add_subdirectory(nanomodbus)
 add_subdirectory(powerSupply)
 
-if (POWER_SUPPLY EQUAL 200)
-
-    add_executable(testPS testPS.cpp)
-    target_link_libraries(testPS powerSupply pico_stdlib)
-
-    # enable usb output, disable uart output
-    pico_enable_stdio_usb(testPS 1)
-    pico_enable_stdio_uart(testPS 0)
-
-    pico_add_extra_outputs(testPS)
-
-elseif (POWER_SUPPLY EQUAL 100)
-#    ...
-
-endif ()
-
 if (NOT LINUX_VERSION)
+
+    if (POWER_SUPPLY EQUAL 200)
+
+        add_executable(testPS testPS.cpp)
+        target_link_libraries(testPS powerSupply pico_stdlib)
+
+        # enable usb output, disable uart output
+        pico_enable_stdio_usb(testPS 1)
+        pico_enable_stdio_uart(testPS 0)
+
+        pico_add_extra_outputs(testPS)
+
+    elseif (POWER_SUPPLY EQUAL 100)
+        #    ...
+
+    endif ()
 
     add_executable(Main Main.cpp)
     target_link_libraries(Main modbusServer powerSupply pico_stdlib)
