@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 PicoController::PicoController() {
+
     // Set up our UART with a basic baud rate.
     uart_init(UART_ID, BAUD_RATE);
 
@@ -37,8 +38,6 @@ static int32_t readUart(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, b
 }
 
 static int32_t writeUart(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
-
-    gpio_put(PicoController::LED_PIN, 1);
 
     uart_write_blocking(UART_ID, buf, count);
 
