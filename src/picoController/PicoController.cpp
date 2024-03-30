@@ -28,9 +28,8 @@ static int32_t readUart(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, b
 
         int timeout = first_byte_from_msg ? COMMUNICATION_WITH_PS_INTERVAL : PicoController::GET_ONE_BYTE_TIMEOUT;
 
-        if (!first_byte_from_msg && !uart_is_readable_within_us(UART_ID, timeout)) {
+        if (!uart_is_readable_within_us(UART_ID, timeout))
             return i;
-        }
 
         uart_read_blocking(UART_ID, buf + i, 1);
     }

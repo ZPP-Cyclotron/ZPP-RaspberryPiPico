@@ -75,7 +75,7 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
 void ModbusServer::waitAndHandleRequest() {
     nmbs_error err = nmbs_server_poll(&nmbs);
 
-    if (err == NMBS_ERROR_TIMEOUT)
+    if (err == NMBS_FIRST_BYTE_TIMEOUT)
         powerSupply->safeCommunicationWithPS();
 
     if (err != NMBS_ERROR_NONE)

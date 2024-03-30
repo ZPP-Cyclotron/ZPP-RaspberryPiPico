@@ -5,14 +5,14 @@ set(BAUD_RATE 38400) # Hz, should be 38400
 set(UART_TX_PIN 0)
 set(UART_RX_PIN 1)
 
-set(COMMUNICATION_WITH_PS_INTERVAL 1000000) # microseconds
+set(COMMUNICATION_WITH_PS_INTERVAL 5000000) # microseconds
 
 set(LINUX_VERSION OFF)
 
 # 200 - power supply model with max current 200 A
 # 100 - power supply model with max current 100 A
 # other value - mock power supply
-set(POWER_SUPPLY 200)
+set(POWER_SUPPLY 0)
 
 # Only for testing:
 set(VIRTUAL_PORT_LINUX "/dev/pts/3")
