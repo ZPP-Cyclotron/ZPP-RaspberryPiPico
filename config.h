@@ -2,9 +2,12 @@
 #define CONFIG_H_IN
 
 #define MODBUS_TIMEOUT 500000
-#define BAUD_RATE 115200
+#define BAUD_RATE 38400
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
+
+#define COMMUNICATION_WITH_PS_INTERVAL 5000000
+#define POWER_SUPPLY 0
 
 // Only for testing:
 #define LINUX_VERSION "OFF"

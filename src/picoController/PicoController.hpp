@@ -23,7 +23,7 @@ public:
     PicoController();
 
     void onError() override {
-//        gpio_put(LED_PIN, 1);
+        gpio_put(LED_PIN, 1);
     }
 
     void onErrorWithMsg(const char errMsg[]) override {}

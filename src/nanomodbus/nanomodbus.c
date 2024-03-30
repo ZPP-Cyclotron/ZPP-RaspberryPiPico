@@ -1490,7 +1490,7 @@ nmbs_error nmbs_server_poll(nmbs_t* nmbs) {
     nmbs_error err = recv_req_header(nmbs, &first_byte_received);
     if (err != NMBS_ERROR_NONE) {
         if (!first_byte_received && err == NMBS_ERROR_TIMEOUT)
-            return NMBS_ERROR_NONE;
+            return NMBS_FIRST_BYTE_TIMEOUT;
 
         return err;
     }
@@ -1523,6 +1523,8 @@ nmbs_error nmbs_server_poll(nmbs_t* nmbs) {
 #ifndef NMBS_STRERROR_DISABLED
 const char* nmbs_strerror(nmbs_error error) {
     switch (error) {
+        case NMBS_FIRST_BYTE_TIMEOUT:
+            return "received nothing";
         case NMBS_ERROR_INVALID_UNIT_ID:
             return "invalid unit ID received";
 

@@ -8,5 +8,5 @@ else ()
     add_library(powerSupply INTERFACE)
 
     target_include_directories(powerSupply INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-    include_directories(testing)
+    add_subdirectory(testing)
 endif ()

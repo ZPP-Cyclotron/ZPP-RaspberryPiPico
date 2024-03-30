@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "../powerSupply/PowerSupply.hpp"
+#include "../powerSupply/PowerSupplyInterface.hpp"
 #include "../picoController/PicoControllerInterface.hpp"
 
 class ModbusServer {

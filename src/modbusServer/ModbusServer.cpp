@@ -5,7 +5,7 @@ static const uint8_t WRITTEN_DATA_TYPE_COILS = 2;
 static const uint8_t COILS_WRITE_MIN_COUNT = WRITTEN_DATA_TYPE_COILS + 1;
 static const uint8_t RTU_SERVER_ADDRESS = 1;
 
-static std::unique_ptr<PowerSupplyInterface> powerSupply; // TODO find a way to make this variable local.
+static std::unique_ptr<PowerSupplyInterface> powerSupply;
 
 ModbusServer::ModbusServer(std::unique_ptr<PowerSupplyInterface> powerSupplyArg,
                            const std::shared_ptr<PicoControllerInterface> &picoController) {
@@ -73,7 +73,12 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
 
 
 void ModbusServer::waitAndHandleRequest() {
-    nmbs_error err = nmbs_server_poll(&nmbs); // TODO implement interrupts with buffer for received messages.
+    nmbs_error err = nmbs_server_poll(&nmbs);
+
+    if (err == NMBS_FIRST_BYTE_TIMEOUT)
+        powerSupply->safeCommunicationWithPS();
+
     if (err != NMBS_ERROR_NONE)
         ModbusServer::picoController->onErrorWithMsg(nmbs_strerror(err));
+
 }
