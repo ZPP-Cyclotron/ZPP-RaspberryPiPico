@@ -6,10 +6,22 @@ add_subdirectory(powerSupply)
 if (NOT LINUX_VERSION)
     add_executable(Main Main.cpp)
     target_link_libraries(Main modbusServer powerSupply pico_stdlib)
+   
+    if (PS200A)
+        add_compile_definitions( PS200A )
+        # enable usb output, disable uart output
+        pico_enable_stdio_usb(Main 1)
+        pico_enable_stdio_uart(Main 0)
+    endif ()
+    
     pico_add_extra_outputs(Main)
 endif ()
 
-if (200A)
+
+
+# TO be deleted after test
+# =======================
+if (PS200A)
     add_executable(testPS testPS.cpp)
     target_link_libraries(testPS powerSupply pico_stdlib)
 
@@ -19,6 +31,7 @@ if (200A)
 
     pico_add_extra_outputs(testPS)
 endif ()
+# =======================
 
 if (EXAMPLES)
     add_executable(irq irq.cpp)

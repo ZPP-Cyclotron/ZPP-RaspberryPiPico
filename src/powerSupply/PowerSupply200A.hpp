@@ -13,14 +13,7 @@ extern "C" {
 
 static_assert(SPI_WORD_LEN == 8);
 
-// void setCurrentWrite(bool st);
-// bool getBit(uint8_t *buf, int pos);
-// void setBit(uint8_t *buf, int pos, bool value);
-// void revarseBits(uint8_t* buf, int pos, int len);
-// uint16_t readUint(uint8_t* buf, int pos, int len);
-// void setUint(uint8_t* buf, uint16_t val, int pos, int len, bool revarse);
-// float maxPossibleValue(int len);
-
+// do delate after tests =======================
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80 ? '1' : '0'), \
@@ -31,8 +24,9 @@ static_assert(SPI_WORD_LEN == 8);
   ((byte) & 0x04 ? '1' : '0'), \
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0')
+// ========================================
 
-class PowerSupply200A : public PowerSupplyInterface {
+class PowerSupply : public PowerSupplyInterface {
 
     uint8_t psBufOut[BUF_LEN_OUT];
     uint8_t psBufIn[BUF_LEN_IN];
@@ -41,7 +35,8 @@ class PowerSupply200A : public PowerSupplyInterface {
     const uint PS_gpio = 22;
 
 public:
-    PowerSupply200A(){
+    PowerSupply(){
+        printf("PS 200A interface inint \n");
         spi_init(PS_spi, 1 * SPI_CLK_F);
 
         // Assign SPI functions to the default SPI pins
@@ -58,7 +53,12 @@ public:
         comunicateWithPS();
         // second Communication is to set write protection on,
         // so thre won't be any unexpected change in set current.
-        comunicateWithPS();   
+        comunicateWithPS();
+
+        // TO delete===
+        printStat();
+        printBuffers();
+        // /=====
     }
 
     // ================================
@@ -176,6 +176,34 @@ public:
     }
 
 private:
+    // do delate after tests =======================
+    float freadCurrent(){
+        return (1.0*PS_MAX_CURRENT*readCurrent()) / maxPossibleValue(psCurrentLen);
+    }
+
+    float freadVoltage(){
+        return (1.0*PS_MAX_VOLTAGE*readVoltage())/ maxPossibleValue(psVoltageLen);
+    }
+
+    uint16_t currentConvert(float crr){
+    uint16_t val = crr*maxPossibleValue(psOUTCurrentLen)/PS_MAX_CURRENT;
+    return val;
+    }
+
+    void printStat(){
+    printf("Current: %f\n", freadCurrent());
+    printf("Current: %x\n", readCurrent());
+
+    printf("Voltage: %f\n", freadVoltage());
+    printf("Voltage: %x\n", readVoltage());
+
+    printf("Is Remote: %s\n", isRemote()?"true":"false");
+    printf("Is Power Circuit On: %s\n", isPowerCircuitOn()?"true":"false");
+    printf("Polarity: %s\n", readPolarity()?"true":"false");
+    printf("Err 1-colective  2-External: %d\n", readErrors());
+    }
+    // =================
+
     void comunicateWithPS(){
 
         int out_i=0;

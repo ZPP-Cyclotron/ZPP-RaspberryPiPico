@@ -5,8 +5,6 @@ set(BAUD_RATE 38400) # Hz, should be 38400
 set(UART_TX_PIN 0)
 set(UART_RX_PIN 1)
 
-set(LINUX_VERSION ON)
-
 # Only for testing:
 set(VIRTUAL_PORT_LINUX "/dev/pts/3")
 set(ILLEGAL_DATA_VALUE_LINUX_TEST 0)
@@ -17,7 +15,7 @@ set(ERROR_RESPONSE_TO_ONE_OF_N_READ_REQUESTS_LINUX_TEST 0)
 configure_file (config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h @ONLY)
 set(LINUX_VERSION OFF)
 set(EXAMPLES OFF)
-set(200A ON)
+set(PS200A ON)
 
 if (NOT LINUX_VERSION)
     include(pico_sdk_import.cmake)

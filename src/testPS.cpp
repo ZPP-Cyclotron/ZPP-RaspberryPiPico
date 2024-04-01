@@ -1,7 +1,7 @@
 #include "powerSupply/PowerSupply200A.hpp"
 #include <memory>
 
-std::unique_ptr<PowerSupply200A> ps;
+std::unique_ptr<PowerSupply> ps;
 float maxPossibleValue(int len){
     return (1<<len)-1;
 }
@@ -34,7 +34,7 @@ void printStat(){
 int main() {
     stdio_init_all();
 
-    ps = std::make_unique<PowerSupply200A>();
+    ps = std::make_unique<PowerSupply>();
 
     sleep_ms(2 * 1000);
     printf("PS interface Teset, press 'y' to start\n");
