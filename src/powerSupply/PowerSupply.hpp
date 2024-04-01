@@ -19,6 +19,10 @@ class PowerSupply : public PowerSupplyInterface {
     uint8_t errors = 0;
 
 public:
+    // PowerSupply (){
+    //     printf("mock PS interface\n");
+    // }
+
     void safeCommunicationWithPS () override{
         return;
     }

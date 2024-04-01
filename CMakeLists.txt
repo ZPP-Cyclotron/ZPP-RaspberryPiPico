@@ -12,7 +12,7 @@ set(LINUX_VERSION OFF)
 # 200 - power supply model with max current 200 A
 # 100 - power supply model with max current 100 A
 # other value - mock power supply
-set(POWER_SUPPLY 0)
+set(POWER_SUPPLY 200)
 
 # Only for testing:
 set(VIRTUAL_PORT_LINUX "/dev/pts/3")

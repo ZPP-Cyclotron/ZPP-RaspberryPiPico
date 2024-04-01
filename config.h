@@ -7,7 +7,7 @@
 #define UART_RX_PIN 1
 
 #define COMMUNICATION_WITH_PS_INTERVAL 5000000
-#define POWER_SUPPLY 0
+#define POWER_SUPPLY 200
 
 // Only for testing:
 #define LINUX_VERSION "OFF"
