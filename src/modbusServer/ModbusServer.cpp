@@ -1,6 +1,6 @@
 #include "ModbusServer.hpp"
 
-static const uint8_t REGISTERS_READ_SIZE = 2;
+static const uint8_t REGISTERS_READ_SIZE = 3;
 static const uint8_t WRITTEN_DATA_TYPE_COILS = 2;
 static const uint8_t COILS_WRITE_MIN_COUNT = WRITTEN_DATA_TYPE_COILS + 1;
 static const uint8_t RTU_SERVER_ADDRESS = 1;
@@ -34,20 +34,24 @@ nmbs_error ModbusServer::handleReadData(uint16_t address, uint16_t quantity, uin
 
     powerSupply->safeCommunicationWithPS();
 
-    uint16_t current = powerSupply->readCurrent();
+    uint16_t realCurrent = powerSupply->readCurrent();
     bool isOn = powerSupply->isPowerCircuitOn();
     bool polarity = powerSupply->readPolarity();
     bool reset = powerSupply->readReset();
     bool remote = powerSupply->isRemote();
 
         registers_out[0] =
-            current + (isOn << powerSupply->currentReadBits) + (polarity << (powerSupply->currentReadBits + 1)) +
+            realCurrent + (isOn << powerSupply->currentReadBits) + (polarity << (powerSupply->currentReadBits + 1)) +
             (reset << (powerSupply->currentReadBits + 2)) + (remote << (powerSupply->currentReadBits + 3));
 
     uint16_t voltage = powerSupply->readVoltage();
     uint8_t errors = powerSupply->readErrors();
 
     registers_out[1] = voltage + (errors << powerSupply->voltageReadBits);
+
+    uint16_t currentSet = powerSupply->getLastSetCurrent();
+
+    registers_out[2] = currentSet;
 
     return NMBS_ERROR_NONE;
 }
