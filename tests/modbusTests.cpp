@@ -12,8 +12,8 @@ const std::string modbusWriteCoils = "0F";
 const std::string correctReadRequest = slaveAddr
                                        + modbusReadRegisters
                                        + "0000" // Address of first register to be read.
-                                       + "0002" // Number of registers to be read.
-                                       + "71CB"; // CRC
+                                       + "0003" // Number of registers to be read.
+                                       + "B00B"; // CRC
 
 const std::string correctWriteCurrentResponse = slaveAddr
                                                 + modbusWriteCoils
@@ -22,26 +22,27 @@ const std::string correctWriteCurrentResponse = slaveAddr
                                                 + "D5C6"; // CRC
 
 const std::string correctWriteOneBitValueResponse = slaveAddr
-                                               + modbusWriteCoils
-                                               + "0000" // Address of first coil to be written.
-                                               + "0003" // Quantity of coils.
-                                               + "15CA";
+                                                    + modbusWriteCoils
+                                                    + "0000" // Address of first coil to be written.
+                                                    + "0003" // Quantity of coils.
+                                                    + "15CA";
 
 class ModbusServerReadTest
-: public testing::TestWithParam<std::tuple<std::string, std::string, bool, bool, bool, bool, std::string, std::string>> {
+        : public testing::TestWithParam<std::tuple<std::string, std::string, bool, bool, bool, bool, std::string, std::string, std::string>> {
 };
 
 TEST_P(ModbusServerReadTest, RespondsToCorrectReadRequest) {
 
-    auto [currentHex, voltageHex, isOn, polarity, reset, remote, errorsHex, response] = ModbusServerReadTest::GetParam();
+    auto [currentHex, voltageHex, isOn, polarity, reset, remote, errorsHex, currentSetHex, response] = ModbusServerReadTest::GetParam();
 
     uint16_t current = std::stoi(currentHex, nullptr, 16);
     uint16_t voltage = std::stoi(voltageHex, nullptr, 16);
     uint8_t errors = std::stoi(errorsHex, nullptr, 16);
+    uint16_t currentSet = std::stoi(currentSetHex, nullptr, 16);
 
     auto mockPowerSupply = std::make_unique<MockPowerSupply>(current, voltage, isOn,
-                                                                                         polarity, reset, remote,
-                                                                                         errors);
+                                                             polarity, reset, remote,
+                                                             errors, currentSet);
     std::string request = correctReadRequest;
 
     auto mockPicoController = std::make_shared<MockPicoController>(request, response);
@@ -54,37 +55,41 @@ TEST_P(ModbusServerReadTest, RespondsToCorrectReadRequest) {
 INSTANTIATE_TEST_SUITE_P(
         ModbusServerTest, ModbusServerReadTest,
         testing::Values(
-                std::make_tuple("FFF", "FFF", 1, 1, 1, 1, "F",
+                std::make_tuple("FFF", "FFF", 1, 1, 1, 1, "F", "AAAA",
                                 slaveAddr
                                 + modbusReadRegisters
-                                + "04" // Byte count
+                                + "06" // Byte count
                                 + "FFFF" // Register 0
                                 + "FFFF" // Register 1
-                                + "FA10" // CRC
-                                ),
-                std::make_tuple("0", "0", 0, 0, 0, 0, "0",
+                                + "AAAA" // Register 2
+                                + "9E73" // CRC
+                ),
+                std::make_tuple("0", "0", 0, 0, 0, 0, "0", "0000",
                                 slaveAddr
                                 + modbusReadRegisters
-                                + "04" // Byte count
+                                + "06" // Byte count
                                 + "0000" // Register 0
                                 + "0000" // Register 1
-                                + "FB84" // CRC
+                                + "0000" // Register 2
+                                + "6093" // CRC
                 ),
-                std::make_tuple("123", "456", 0, 1, 0, 1, "1",
+                std::make_tuple("123", "456", 0, 1, 0, 1, "1", "BCDE",
                                 slaveAddr
                                 + modbusReadRegisters
-                                + "04" // Byte count
+                                + "06" // Byte count
                                 + "A123" // Register 0
                                 + "1456" // Register 1
-                                + "A68C" // CRC
+                                + "BCDE" // Register 2
+                                + "A95D" // CRC
                 ),
-                std::make_tuple("ABC", "DEF", 1, 0, 1, 0, "A",
+                std::make_tuple("ABC", "DEF", 1, 0, 1, 0, "A", "1918",
                                 slaveAddr
                                 + modbusReadRegisters
-                                + "04" // Byte count
+                                + "06" // Byte count
                                 + "5ABC" // Register 0
                                 + "ADEF" // Register 1
-                                + "15A4" // CRC
+                                + "1918" // Register 2
+                                + "2771" // CRC
                 )
         ));
 
@@ -199,7 +204,7 @@ class ModbusServerIncorrectRequestTest
 TEST_P(ModbusServerIncorrectRequestTest, RespondsWithErrorCode) {
     auto [request, response] = ModbusServerIncorrectRequestTest::GetParam();
 
-    auto mockPowerSupply = std::make_unique<MockPowerSupply>(-1,0);
+    auto mockPowerSupply = std::make_unique<MockPowerSupply>(-1, 0);
 
     auto mockPicoController = std::make_shared<MockPicoController>(request, response);
 
@@ -217,7 +222,7 @@ INSTANTIATE_TEST_SUITE_P(
                 ),
                 std::make_tuple(
                         "010200000016F9C4" // Modbus function that is not handled.
-                        ,"0182018160"
+                        , "0182018160"
                 ),
                 std::make_tuple(
                         slaveAddr
@@ -253,8 +258,8 @@ INSTANTIATE_TEST_SUITE_P(
                         slaveAddr
                         + modbusReadRegisters
                         + "0001" // Invalid address of first register to be read.
-                        + "0002" // Number of registers to be read.
-                        + "200B" // CRC
+                        + "0003" // Number of registers to be read.
+                        + "E1CB" // CRC
                         , "018402C2C1"
                 ),
                 std::make_tuple(

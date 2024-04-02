@@ -83,6 +83,7 @@ public:
                 if (PRINT_PROMPTS)
                     printf("New current value: %d\n", value);
                 // Converting current unit from 200/(2^16-1) A to 200/(2^12-1) A.
+                currentSet = value;
                 current = value * ((2 << 11) - 1) / UINT16_MAX;
                 break;
             default:
