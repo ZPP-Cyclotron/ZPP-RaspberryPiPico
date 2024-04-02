@@ -32,6 +32,8 @@ nmbs_error ModbusServer::handleReadData(uint16_t address, uint16_t quantity, uin
     if (address != 0 || quantity != REGISTERS_READ_SIZE)
         return NMBS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
+    powerSupply->safeCommunicationWithPS();
+
     uint16_t current = powerSupply->readCurrent();
     bool isOn = powerSupply->isPowerCircuitOn();
     bool polarity = powerSupply->readPolarity();
@@ -68,6 +70,8 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
     if (powerSupply->setStatus(dataType, value) < 0)
         return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
 
+    powerSupply->safeCommunicationWithPS();
+
     return NMBS_ERROR_NONE;
 }
 
@@ -75,10 +79,13 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
 void ModbusServer::waitAndHandleRequest() {
     nmbs_error err = nmbs_server_poll(&nmbs);
 
-    if (err == NMBS_FIRST_BYTE_TIMEOUT)
-        powerSupply->safeCommunicationWithPS();
+//    if (err == NMBS_FIRST_BYTE_TIMEOUT)
+//        powerSupply->safeCommunicationWithPS();
 
-    if (err != NMBS_ERROR_NONE)
+    powerSupply->safeCommunicationWithPS();
+
+    if (err != NMBS_ERROR_NONE) {
         ModbusServer::picoController->onErrorWithMsg(nmbs_strerror(err));
-
+//        powerSupply->safeCommunicationWithPS();
+    }
 }
