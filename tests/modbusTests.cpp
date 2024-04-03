@@ -28,12 +28,12 @@ const std::string correctWriteOneBitValueResponse = slaveAddr
                                                     + "15CA";
 
 class ModbusServerReadTest
-        : public testing::TestWithParam<std::tuple<std::string, std::string, bool, bool, bool, bool, std::string, std::string, std::string>> {
+        : public testing::TestWithParam<std::tuple<std::string, std::string, bool, bool, bool, bool, std::string, bool, std::string, std::string>> {
 };
 
 TEST_P(ModbusServerReadTest, RespondsToCorrectReadRequest) {
 
-    auto [currentHex, voltageHex, isOn, polarity, reset, remote, errorsHex, currentSetHex, response] = ModbusServerReadTest::GetParam();
+    auto [currentHex, voltageHex, isOn, polarity, reset, remote, errorsHex, isOnSet, currentSetHex, response] = ModbusServerReadTest::GetParam();
 
     uint16_t current = std::stoi(currentHex, nullptr, 16);
     uint16_t voltage = std::stoi(voltageHex, nullptr, 16);
@@ -42,7 +42,7 @@ TEST_P(ModbusServerReadTest, RespondsToCorrectReadRequest) {
 
     auto mockPowerSupply = std::make_unique<MockPowerSupply>(current, voltage, isOn,
                                                              polarity, reset, remote,
-                                                             errors, currentSet);
+                                                             errors, isOnSet, currentSet);
     std::string request = correctReadRequest;
 
     auto mockPicoController = std::make_shared<MockPicoController>(request, response);
@@ -55,7 +55,7 @@ TEST_P(ModbusServerReadTest, RespondsToCorrectReadRequest) {
 INSTANTIATE_TEST_SUITE_P(
         ModbusServerTest, ModbusServerReadTest,
         testing::Values(
-                std::make_tuple("FFF", "FFF", 1, 1, 1, 1, "F", "AAAA",
+                std::make_tuple("FFF", "FFF", 1, 1, 1, 1, "7", 1, "AAAA",
                                 slaveAddr
                                 + modbusReadRegisters
                                 + "06" // Byte count
@@ -64,7 +64,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 + "AAAA" // Register 2
                                 + "9E73" // CRC
                 ),
-                std::make_tuple("0", "0", 0, 0, 0, 0, "0", "0000",
+                std::make_tuple("0", "0", 0, 0, 0, 0, "0", 0, "0000",
                                 slaveAddr
                                 + modbusReadRegisters
                                 + "06" // Byte count
@@ -73,7 +73,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 + "0000" // Register 2
                                 + "6093" // CRC
                 ),
-                std::make_tuple("123", "456", 0, 1, 0, 1, "1", "BCDE",
+                std::make_tuple("123", "456", 0, 1, 0, 1, "1", 0, "BCDE",
                                 slaveAddr
                                 + modbusReadRegisters
                                 + "06" // Byte count
@@ -82,7 +82,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 + "BCDE" // Register 2
                                 + "A95D" // CRC
                 ),
-                std::make_tuple("ABC", "DEF", 1, 0, 1, 0, "A", "1918",
+                std::make_tuple("ABC", "DEF", 1, 0, 1, 0, "2", 1, "1918",
                                 slaveAddr
                                 + modbusReadRegisters
                                 + "06" // Byte count

@@ -65,6 +65,7 @@ public:
 
         switch (dataType) {
             case 0:
+                isOnSet = value;
                 if (PRINT_PROMPTS)
                     printf("New on/off value: %d\n", value);
                 isOn = value;

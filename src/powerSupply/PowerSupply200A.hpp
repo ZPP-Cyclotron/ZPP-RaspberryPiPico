@@ -119,6 +119,7 @@ public:
 
         switch (dataType) {
             case 0:
+                isOnSet = value;
                 setPowerCircuit(value);
                 break;
             // case 1:

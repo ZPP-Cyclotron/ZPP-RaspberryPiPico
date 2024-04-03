@@ -30,11 +30,17 @@ public:
         return currentSet;
     }
 
+    uint16_t getIsOnSet() {
+        return isOnSet;
+    }
+
     static const int currentReadBits = 12;
     static const int voltageReadBits = 12;
+    static const int errorReadBits = 3;
 
 protected:
     uint16_t currentSet = 0;
+    bool isOnSet = false;
 };
 
 #endif //ZPP_CYCLOTRON_POWERSUPPLYINTERFACE_HPP
