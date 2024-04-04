@@ -89,10 +89,10 @@ void ModbusServer::waitAndHandleRequest() {
 //    if (err == NMBS_FIRST_BYTE_TIMEOUT)
 //        powerSupply->safeCommunicationWithPS();
 
-    powerSupply->safeCommunicationWithPS();
+//    powerSupply->safeCommunicationWithPS();
 
     if (err != NMBS_ERROR_NONE) {
         ModbusServer::picoController->onErrorWithMsg(nmbs_strerror(err));
-//        powerSupply->safeCommunicationWithPS();
+        powerSupply->safeCommunicationWithPS();
     }
 }

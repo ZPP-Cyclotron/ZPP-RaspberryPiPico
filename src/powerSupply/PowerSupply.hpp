@@ -18,6 +18,9 @@ class PowerSupply : public PowerSupplyInterface {
     bool reset = false;
     uint8_t errors = 0;
 
+    uint16_t currentSet = 0;
+    bool isOnSet = false;
+
 public:
     // PowerSupply (){
     //     printf("mock PS interface\n");
@@ -92,6 +95,14 @@ public:
         }
 
         return 1;
+    }
+
+    uint16_t getLastSetCurrent() override {
+        return currentSet;
+    }
+
+    bool getIsOnSet() override {
+        return isOnSet;
     }
 };
 
