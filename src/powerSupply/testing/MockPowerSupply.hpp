@@ -15,6 +15,8 @@ private:
     bool reset = 0;
     bool remote = 0;
     uint8_t errors = 0;
+    uint16_t currentSet = 0;
+    bool isOnSet = false;
 
     int toBeChanged = -1;
     uint16_t newValue = 0;
@@ -83,6 +85,14 @@ public:
         toBeChanged = -1;
 
         return 1;
+    }
+
+    uint16_t getLastSetCurrent() override {
+        return currentSet;
+    }
+
+    bool getIsOnSet() override {
+        return isOnSet;
     }
 };
 
