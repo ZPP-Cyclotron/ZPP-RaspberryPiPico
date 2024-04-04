@@ -34,6 +34,10 @@ class PowerSupply200A : public PowerSupplyInterface {
     spi_inst_t* PS_spi = spi_default;
     const uint PS_gpio = 22;
 
+    // TODO replace it with reading from psBufOut.
+    uint16_t currentSet = 0;
+    bool isOnSet = false;
+
 public:
     PowerSupply200A(){
         printf("PS 200A interface inint \n");
@@ -102,7 +106,6 @@ public:
         setCurrentWrite(1);
 
         setUint(psBufOut,val,psOUTCurrentPos,psOUTCurrentLen,true);
-        safeCommunicationWithPS();
         return 1;
     }
     int setCurrent(float crr){
@@ -119,6 +122,7 @@ public:
 
         switch (dataType) {
             case 0:
+                isOnSet = value;
                 setPowerCircuit(value);
                 break;
             // case 1:
@@ -127,6 +131,14 @@ public:
             // case 2:
             //     reset = value;
             //     break;
+            case 3:
+//                if (PRINT_PROMPTS)
+//                    printf("New current value: %d\n", value);
+                // Converting current unit from 200/(2^16-1) A to 200/(2^12-1) A.
+                currentSet = value;
+                setCurrent(value);
+//                current = value * ((2 << 11) - 1) / UINT16_MAX;
+                break;
             default:
                 return -1;
         }
@@ -137,19 +149,17 @@ public:
     void setPowerCircuit(bool st) {
         setCurrentWrite(1);
         setBit(psBufOut, psOUTPowerCircuitPos, st);
-        safeCommunicationWithPS();
     }
 
     //TODO: how long it should be 'high'
     void setReset(bool state){
         setCurrentWrite(1);
         setBit(psBufOut, psOUTPsResetPos, state);
-        safeCommunicationWithPS();
     }
+
     void setElectronicReset(bool state){
         setCurrentWrite(1);
         setBit(psBufOut, psOUTElectronicResetPos, state);
-        safeCommunicationWithPS();
     }
 
     void setLedGreen(bool state){
@@ -173,6 +183,14 @@ public:
             out_i = std::max(0,wordNr - (BUF_LEN_IN- BUF_LEN_OUT) );
             printf("out %d -> " BYTE_TO_BINARY_PATTERN "\n",out_i,BYTE_TO_BINARY(psBufOut[out_i]));
         }
+    }
+
+    uint16_t getLastSetCurrent() override {
+        return currentSet;
+    }
+
+    bool getIsOnSet() override {
+        return isOnSet;
     }
 
 private:
@@ -300,4 +318,5 @@ private:
         setBit(psBufOut, psOUTConfirmCurrentWrite1Pos, st);
         setBit(psBufOut, psOUTConfirmCurrentWrite2Pos, st);
     }
+
 };

@@ -26,8 +26,14 @@ public:
 
     virtual int setStatus(uint8_t dataType, uint16_t value) = 0;
 
+    virtual uint16_t getLastSetCurrent() = 0;
+
+    virtual bool getIsOnSet() = 0;
+
     static const int currentReadBits = 12;
     static const int voltageReadBits = 12;
+    static const int errorReadBits = 3;
+
 };
 
 #endif //ZPP_CYCLOTRON_POWERSUPPLYINTERFACE_HPP

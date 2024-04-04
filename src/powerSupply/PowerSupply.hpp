@@ -18,6 +18,9 @@ class PowerSupply : public PowerSupplyInterface {
     bool reset = false;
     uint8_t errors = 0;
 
+    uint16_t currentSet = 0;
+    bool isOnSet = false;
+
 public:
     // PowerSupply (){
     //     printf("mock PS interface\n");
@@ -65,6 +68,7 @@ public:
 
         switch (dataType) {
             case 0:
+                isOnSet = value;
                 if (PRINT_PROMPTS)
                     printf("New on/off value: %d\n", value);
                 isOn = value;
@@ -83,6 +87,7 @@ public:
                 if (PRINT_PROMPTS)
                     printf("New current value: %d\n", value);
                 // Converting current unit from 200/(2^16-1) A to 200/(2^12-1) A.
+                currentSet = value;
                 current = value * ((2 << 11) - 1) / UINT16_MAX;
                 break;
             default:
@@ -90,6 +95,14 @@ public:
         }
 
         return 1;
+    }
+
+    uint16_t getLastSetCurrent() override {
+        return currentSet;
+    }
+
+    bool getIsOnSet() override {
+        return isOnSet;
     }
 };
 

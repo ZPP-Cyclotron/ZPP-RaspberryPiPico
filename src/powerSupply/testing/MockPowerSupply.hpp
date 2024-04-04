@@ -21,12 +21,17 @@ private:
 
 public:
 
-    MockPowerSupply(uint16_t curr, uint16_t volt, bool on, bool pol, bool rst, bool rem, uint8_t err)
-            : current(curr), voltage(volt), isOn(on), polarity(pol), reset(rst), remote(rem), errors(err) {}
+    MockPowerSupply(uint16_t curr, uint16_t volt, bool on, bool pol, bool rst, bool rem, uint8_t err, bool isOnSet,
+                    uint16_t setCurrent)
+            : current(curr), voltage(volt), isOn(on), polarity(pol), reset(rst), remote(rem),
+              errors(err) {
+        this->currentSet = setCurrent;
+        this->isOnSet = isOnSet;
+    }
 
     MockPowerSupply(int dataType, uint16_t value) : toBeChanged(dataType), newValue(value) {}
 
-    void safeCommunicationWithPS () override {
+    void safeCommunicationWithPS() override {
         return;
     }
 

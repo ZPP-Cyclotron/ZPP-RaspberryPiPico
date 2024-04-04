@@ -1,6 +1,6 @@
 #include "ModbusServer.hpp"
 
-static const uint8_t REGISTERS_READ_SIZE = 2;
+static const uint8_t REGISTERS_READ_SIZE = 3;
 static const uint8_t WRITTEN_DATA_TYPE_COILS = 2;
 static const uint8_t COILS_WRITE_MIN_COUNT = WRITTEN_DATA_TYPE_COILS + 1;
 static const uint8_t RTU_SERVER_ADDRESS = 1;
@@ -32,20 +32,29 @@ nmbs_error ModbusServer::handleReadData(uint16_t address, uint16_t quantity, uin
     if (address != 0 || quantity != REGISTERS_READ_SIZE)
         return NMBS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
-    uint16_t current = powerSupply->readCurrent();
-    bool isOn = powerSupply->isPowerCircuitOn();
+    powerSupply->safeCommunicationWithPS();
+
+    uint16_t realCurrent = powerSupply->readCurrent();
+    bool realIsOn = powerSupply->isPowerCircuitOn();
     bool polarity = powerSupply->readPolarity();
     bool reset = powerSupply->readReset();
     bool remote = powerSupply->isRemote();
 
-        registers_out[0] =
-            current + (isOn << powerSupply->currentReadBits) + (polarity << (powerSupply->currentReadBits + 1)) +
+    registers_out[0] =
+            realCurrent + (realIsOn << powerSupply->currentReadBits) +
+            (polarity << (powerSupply->currentReadBits + 1)) +
             (reset << (powerSupply->currentReadBits + 2)) + (remote << (powerSupply->currentReadBits + 3));
 
     uint16_t voltage = powerSupply->readVoltage();
     uint8_t errors = powerSupply->readErrors();
+    bool isOnSet = powerSupply->getIsOnSet();
 
-    registers_out[1] = voltage + (errors << powerSupply->voltageReadBits);
+    registers_out[1] = voltage + (errors << powerSupply->voltageReadBits) +
+                       (isOnSet << (powerSupply->voltageReadBits + powerSupply->errorReadBits));
+
+    uint16_t currentSet = powerSupply->getLastSetCurrent();
+
+    registers_out[2] = currentSet;
 
     return NMBS_ERROR_NONE;
 }
@@ -59,14 +68,16 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
 
     uint8_t dataType = (nmbs_bitfield_read(coils, 1) << 1) + nmbs_bitfield_read(coils, 0);
 
-    uint16_t value = 0 ;
-    
+    uint16_t value = 0;
+
     for (int i = WRITTEN_DATA_TYPE_COILS; i < quantity; i++) {
         value += nmbs_bitfield_read(coils, i) << (quantity - i - 1);
     }
 
     if (powerSupply->setStatus(dataType, value) < 0)
         return NMBS_EXCEPTION_ILLEGAL_DATA_VALUE;
+
+    powerSupply->safeCommunicationWithPS();
 
     return NMBS_ERROR_NONE;
 }
@@ -75,10 +86,13 @@ ModbusServer::handleWriteData(uint16_t address, uint16_t quantity, const nmbs_bi
 void ModbusServer::waitAndHandleRequest() {
     nmbs_error err = nmbs_server_poll(&nmbs);
 
-    if (err == NMBS_FIRST_BYTE_TIMEOUT)
-        powerSupply->safeCommunicationWithPS();
+//    if (err == NMBS_FIRST_BYTE_TIMEOUT)
+//        powerSupply->safeCommunicationWithPS();
 
-    if (err != NMBS_ERROR_NONE)
+//    powerSupply->safeCommunicationWithPS();
+
+    if (err != NMBS_ERROR_NONE) {
         ModbusServer::picoController->onErrorWithMsg(nmbs_strerror(err));
-
+        powerSupply->safeCommunicationWithPS();
+    }
 }
