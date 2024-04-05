@@ -6,15 +6,7 @@ add_subdirectory(powerSupply)
 if (NOT LINUX_VERSION)
 
     if (POWER_SUPPLY EQUAL 200)
-
-        add_executable(testPS testPS.cpp)
-        target_link_libraries(testPS powerSupply pico_stdlib)
-
-        # enable usb output, disable uart output
-        pico_enable_stdio_usb(testPS 1)
-        pico_enable_stdio_uart(testPS 0)
-
-        pico_add_extra_outputs(testPS)
+        add_compile_definitions( PS200A )
 
     elseif (POWER_SUPPLY EQUAL 100)
         #    ...

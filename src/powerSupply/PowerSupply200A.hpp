@@ -14,7 +14,7 @@ extern "C" {
 static_assert(SPI_WORD_LEN == 8);
 
 // do delate after tests =======================
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c - %c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80 ? '1' : '0'), \
   ((byte) & 0x40 ? '1' : '0'), \
@@ -26,7 +26,7 @@ static_assert(SPI_WORD_LEN == 8);
   ((byte) & 0x01 ? '1' : '0')
 // ========================================
 
-class PowerSupply200A : public PowerSupplyInterface {
+class PowerSupply : public PowerSupplyInterface {
 
     uint8_t psBufOut[BUF_LEN_OUT];
     uint8_t psBufIn[BUF_LEN_IN];
@@ -36,12 +36,20 @@ class PowerSupply200A : public PowerSupplyInterface {
 
     // TODO replace it with reading from psBufOut.
     uint16_t currentSet = 0;
-    bool isOnSet = false;
 
 public:
-    PowerSupply200A(){
+    PowerSupply(){
         printf("PS 200A interface inint \n");
         spi_init(PS_spi, 1 * SPI_CLK_F);
+
+        for (int i = 0; i < BUF_LEN_OUT; i++)
+        {
+            psBufOut[i] = 0;
+        }
+        for (int i = 0; i < BUF_LEN_IN; i++)
+        {
+            psBufIn[i] = 0;
+        }
 
         // Assign SPI functions to the default SPI pins
         gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
@@ -122,7 +130,6 @@ public:
 
         switch (dataType) {
             case 0:
-                isOnSet = value;
                 setPowerCircuit(value);
                 break;
             // case 1:
@@ -132,12 +139,8 @@ public:
             //     reset = value;
             //     break;
             case 3:
-//                if (PRINT_PROMPTS)
-//                    printf("New current value: %d\n", value);
-                // Converting current unit from 200/(2^16-1) A to 200/(2^12-1) A.
                 currentSet = value;
                 setCurrent(value);
-//                current = value * ((2 << 11) - 1) / UINT16_MAX;
                 break;
             default:
                 return -1;
@@ -190,7 +193,7 @@ public:
     }
 
     bool getIsOnSet() override {
-        return isOnSet;
+        return getBit(psBufOut, psOUTPowerCircuitPos);
     }
 
 private:
@@ -233,14 +236,8 @@ private:
             in_i = wordNr;
             out_i = std::max(0,wordNr - (BUF_LEN_IN- BUF_LEN_OUT) );
 
-            // TODO: check if correct number of bytes has been written
             spi_write_read_blocking(PS_spi, &psBufOut[out_i], &psBufIn[in_i], 1);
-            // spi_write_blocking(PS_spi, &psBufOut[out_i], 1);
-            // printf("out %d -> "BYTE_TO_BINARY_PATTERN"\n",out_i,BYTE_TO_BINARY(psBufOut[out_i]));
-            // printf("in %d -> "BYTE_TO_BINARY_PATTERN"\n",in_i,BYTE_TO_BINARY(psBufIn[in_i]));
         }
-        // spi_write_blocking(PS_spi, psBufOut, 4);
-        //DELAY??
         gpio_put(PS_gpio,0);
 
         setCurrentWrite(0);
@@ -281,7 +278,6 @@ private:
     }
 
     uint16_t readUint(uint8_t* buf, int pos, int len){
-        // if(revarse) revarseBits(buf, pos, len);  revarseBits permanently reverses order so it can't be used in read
 
         uint16_t val=0;
         for(int i=0;len>i;i++){
