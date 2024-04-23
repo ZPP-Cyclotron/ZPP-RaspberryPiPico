@@ -34,7 +34,9 @@ class PowerSupply : public PowerSupplyInterface {
     spi_inst_t* PS_spi = spi_default;
     const uint PS_gpio = 22;
 
-    // TODO replace it with reading from psBufOut.
+    // because it isn't possible to read that from psBufOut.
+    // its avrged value of current_read
+    float avrgCurrent = 0;
     uint16_t currentSet = 0;
 
 public:
@@ -62,10 +64,26 @@ public:
     }
 
     void safeCommunicationWithPS (){
-        comunicateWithPS();
+        
         // second Communication is to set write protection on,
         // so thre won't be any unexpected change in set current.
-        comunicateWithPS();
+        avrgCurrent =0;
+        avrgCurrent += freadCurrent();
+        if(!isRemote()){
+            comunicateWithPS();
+            setPowerCircuit(isPowerCircuitOn());
+            comunicateWithPS();
+        }
+        else{
+            comunicateWithPS();
+        }
+        avrgCurrent += freadCurrent();
+
+        for (int i=2;i< AVRG_COMPONENT_COUNT;i++){
+            comunicateWithPS();
+            avrgCurrent += freadCurrent();
+        }
+        avrgCurrent /= std::max(2, AVRG_COMPONENT_COUNT);
 
         // TO delete===
         printStat();
@@ -77,8 +95,14 @@ public:
     // for now comunnication with PS is only whet sending data
     // TDO: make sure that's Ok
     uint16_t readCurrent() {
-        return readUint(psBufIn, psCurrentPos, psCurrentLen) ;
+        uint16_t val = avrgCurrent*maxPossibleValue(psOUTCurrentLen)/PS_MAX_CURRENT;
+        return val;
     }
+
+    uint16_t getLastSetCurrent() override {
+        return readCurrent();
+    }
+
 
     uint16_t readVoltage() {
         return readUint(psBufIn, psVoltagePos, psVoltageLen) ;
@@ -188,18 +212,17 @@ public:
         }
     }
 
-    uint16_t getLastSetCurrent() override {
-        return currentSet;
-    }
-
     bool getIsOnSet() override {
         return getBit(psBufOut, psOUTPowerCircuitPos);
     }
 
 private:
     // do delate after tests =======================
+    uint16_t readCurrentRaw() {
+        return readUint(psBufIn, psCurrentPos, psCurrentLen) ;
+    }
     float freadCurrent(){
-        return (1.0*PS_MAX_CURRENT*readCurrent()) / maxPossibleValue(psCurrentLen);
+        return (1.0*PS_MAX_CURRENT*readCurrentRaw()) / maxPossibleValue(psCurrentLen);
     }
 
     float freadVoltage(){
