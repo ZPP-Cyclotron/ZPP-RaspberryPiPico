@@ -17,18 +17,20 @@ private:
     uint8_t errors = 0;
     uint16_t currentSet = 0;
     bool isOnSet = false;
+    bool polaritySet = false;
 
     int toBeChanged = -1;
     uint16_t newValue = 0;
 
 public:
 
-    MockPowerSupply(uint16_t curr, uint16_t volt, bool on, bool pol, bool rst, bool rem, uint8_t err, bool isOnSet,
+    MockPowerSupply(uint16_t curr, uint16_t volt, bool on, bool pol, bool rst, bool rem, uint8_t err, bool polaritySet, bool isOnSet,
                     uint16_t setCurrent)
             : current(curr), voltage(volt), isOn(on), polarity(pol), reset(rst), remote(rem),
               errors(err) {
         this->currentSet = setCurrent;
         this->isOnSet = isOnSet;
+        this->polaritySet = polaritySet;
     }
 
     MockPowerSupply(int dataType, uint16_t value) : toBeChanged(dataType), newValue(value) {}
@@ -93,6 +95,10 @@ public:
 
     bool getIsOnSet() override {
         return isOnSet;
+    }
+
+    bool getPolaritySet() override {
+        return polaritySet;
     }
 };
 

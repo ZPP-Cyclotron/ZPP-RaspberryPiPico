@@ -30,9 +30,11 @@ public:
 
     virtual bool getIsOnSet() = 0;
 
+    virtual bool getPolaritySet() = 0;
+
     static const int currentReadBits = 12;
     static const int voltageReadBits = 12;
-    static const int errorReadBits = 3;
+    static const int errorReadBits = 2;
 
 };
 

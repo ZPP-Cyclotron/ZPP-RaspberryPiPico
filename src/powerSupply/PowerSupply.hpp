@@ -20,6 +20,7 @@ class PowerSupply : public PowerSupplyInterface {
 
     uint16_t currentSet = 0;
     bool isOnSet = false;
+    bool polaritySet = false;
 
 public:
     // PowerSupply (){
@@ -103,6 +104,10 @@ public:
 
     bool getIsOnSet() override {
         return isOnSet;
+    }
+
+    bool getPolaritySet() override {
+        return polaritySet;
     }
 };
 
