@@ -36,21 +36,24 @@ nmbs_error ModbusServer::handleReadData(uint16_t address, uint16_t quantity, uin
 
     uint16_t realCurrent = powerSupply->readCurrent();
     bool realIsOn = powerSupply->isPowerCircuitOn();
-    bool polarity = powerSupply->readPolarity();
+    bool realPolarity = powerSupply->readPolarity();
     bool reset = powerSupply->readReset();
     bool remote = powerSupply->isRemote();
 
     registers_out[0] =
             realCurrent + (realIsOn << powerSupply->currentReadBits) +
-            (polarity << (powerSupply->currentReadBits + 1)) +
+            (realPolarity << (powerSupply->currentReadBits + 1)) +
             (reset << (powerSupply->currentReadBits + 2)) + (remote << (powerSupply->currentReadBits + 3));
 
     uint16_t voltage = powerSupply->readVoltage();
     uint8_t errors = powerSupply->readErrors();
+    bool polaritySet = powerSupply->getPolaritySet();
     bool isOnSet = powerSupply->getIsOnSet();
 
-    registers_out[1] = voltage + (errors << powerSupply->voltageReadBits) +
-                       (isOnSet << (powerSupply->voltageReadBits + powerSupply->errorReadBits));
+    int setPolarityBit = powerSupply->voltageReadBits + powerSupply->errorReadBits;
+
+    registers_out[1] = voltage + (errors << powerSupply->voltageReadBits) + (polaritySet << setPolarityBit) +
+                       (isOnSet << (setPolarityBit + 1));
 
     uint16_t currentSet = powerSupply->getLastSetCurrent();
 

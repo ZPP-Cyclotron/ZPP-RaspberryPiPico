@@ -216,6 +216,11 @@ public:
         return getBit(psBufOut, psOUTPowerCircuitPos);
     }
 
+    bool getPolaritySet() override {
+        // This power supply doesn't support setting polarity parameter.
+        return false;
+    }
+
 private:
     // do delate after tests =======================
     uint16_t readCurrentRaw() {
