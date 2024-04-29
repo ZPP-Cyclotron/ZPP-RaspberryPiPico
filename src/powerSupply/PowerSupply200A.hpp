@@ -100,6 +100,9 @@ public:
     }
 
     uint16_t getLastSetCurrent() override {
+        if (isRemote() ){
+            return currentSet;
+        }
         return readCurrent();
     }
 
@@ -314,6 +317,7 @@ private:
         }
         return val;
     }
+
     void setUint(uint8_t* buf, uint16_t val, int pos, int len, bool revarse){
 
         unsigned int crr=1;
