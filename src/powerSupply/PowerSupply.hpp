@@ -77,6 +77,7 @@ public:
             case 1:
                 if (PRINT_PROMPTS)
                     printf("New polarity value: %d\n", value);
+                polaritySet = value;
                 polarity = value;
                 break;
             case 2:
