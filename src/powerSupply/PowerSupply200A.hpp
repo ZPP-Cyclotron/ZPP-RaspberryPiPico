@@ -68,15 +68,9 @@ public:
         // second Communication is to set write protection on,
         // so thre won't be any unexpected change in set current.
         avrgCurrent =0;
+        comunicateWithPS();
         avrgCurrent += freadCurrent();
-        if(!isRemote()){
-            comunicateWithPS();
-            setPowerCircuit(isPowerCircuitOn());
-            comunicateWithPS();
-        }
-        else{
-            comunicateWithPS();
-        }
+        comunicateWithPS();
         avrgCurrent += freadCurrent();
 
         for (int i=2;i< AVRG_COMPONENT_COUNT;i++){
@@ -85,6 +79,11 @@ public:
         }
         avrgCurrent /= std::max(2, AVRG_COMPONENT_COUNT);
 
+        if(!isRemote()){
+            setPowerCircuit(isPowerCircuitOn());
+            setCurrent(getLastSetCurrent());
+            comunicateWithPS();
+        }
         // TO delete===
         printStat();
         printBuffers();
@@ -95,7 +94,7 @@ public:
     // for now comunnication with PS is only whet sending data
     // TDO: make sure that's Ok
     uint16_t readCurrent() {
-        uint16_t val = avrgCurrent*maxPossibleValue(psOUTCurrentLen)/PS_MAX_CURRENT;
+        uint16_t val = avrgCurrent*maxPossibleValue(psCurrentLen)/PS_MAX_CURRENT;
         return val;
     }
 
@@ -103,7 +102,7 @@ public:
         if (isRemote() ){
             return currentSet;
         }
-        return readCurrent();
+        return avrgCurrent*maxPossibleValue(psOUTCurrentLen)/PS_MAX_CURRENT;;
     }
 
 
