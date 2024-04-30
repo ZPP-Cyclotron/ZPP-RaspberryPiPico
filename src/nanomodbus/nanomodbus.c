@@ -187,9 +187,9 @@ uint16_t nmbs_crc_calc(const uint8_t* data, uint32_t length) {
 }
 
 
-static nmbs_error recv_bytes(nmbs_t* nmbs, uint16_t count, bool first_byte_from_msg) {
+static nmbs_error recv_bytes(nmbs_t* nmbs, uint16_t count, bool first_byte_from_msg, bool last_byte_from_msg) {
     int32_t ret =
-            nmbs->platform.read(nmbs->msg.buf + nmbs->msg.buf_idx, count, nmbs->byte_timeout_ms, first_byte_from_msg, nmbs->platform.arg);
+            nmbs->platform.read(nmbs->msg.buf + nmbs->msg.buf_idx, count, nmbs->byte_timeout_ms, first_byte_from_msg, last_byte_from_msg, nmbs->platform.arg);
 
     if (ret == count)
         return NMBS_ERROR_NONE;
@@ -205,7 +205,7 @@ static nmbs_error recv_bytes(nmbs_t* nmbs, uint16_t count, bool first_byte_from_
 }
 
 static nmbs_error recv(nmbs_t* nmbs, uint16_t count) {
-    return recv_bytes(nmbs, count, false);
+    return recv_bytes(nmbs, count, false, false);
 }
 
 static nmbs_error send(nmbs_t* nmbs, uint16_t count) {
@@ -232,7 +232,7 @@ static nmbs_error recv_msg_footer(nmbs_t* nmbs) {
     if (nmbs->platform.transport == NMBS_TRANSPORT_RTU) {
         uint16_t crc = nmbs_crc_calc(nmbs->msg.buf, nmbs->msg.buf_idx);
 
-        nmbs_error err = recv(nmbs, 2);
+        nmbs_error err = recv_bytes(nmbs, 2, false, true);
         if (err != NMBS_ERROR_NONE)
             return err;
 
@@ -258,7 +258,7 @@ static nmbs_error recv_msg_header(nmbs_t* nmbs, bool* first_byte_received) {
     *first_byte_received = false;
 
     if (nmbs->platform.transport == NMBS_TRANSPORT_RTU) {
-        nmbs_error err = recv_bytes(nmbs, 1, true);
+        nmbs_error err = recv_bytes(nmbs, 1, true, false);
 
         nmbs->byte_timeout_ms = old_byte_timeout;
 
@@ -1510,7 +1510,7 @@ nmbs_error nmbs_server_poll(nmbs_t* nmbs) {
     if (err != NMBS_ERROR_NONE && !nmbs_error_is_exception(err)) {
         if (nmbs->platform.transport == NMBS_TRANSPORT_RTU && err != NMBS_ERROR_TIMEOUT && nmbs->msg.ignored) {
             // Flush the remaining data on the line
-            nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, false, nmbs->platform.arg);
+            nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, false, false, nmbs->platform.arg);
         }
 
         return err;
