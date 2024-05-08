@@ -18,7 +18,7 @@ extern "C" {
 class PicoController : public PicoControllerInterface {
 
 public:
-    static const int LED_PIN = PICO_DEFAULT_LED_PIN;
+//    static const int LED_PIN = 2;
 
     PicoController();
 
