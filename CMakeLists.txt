@@ -4,6 +4,7 @@ set(MODBUS_TIMEOUT 500000) # microseconds
 set(BAUD_RATE 38400) # Hz, should be 38400
 set(UART_TX_PIN 0)
 set(UART_RX_PIN 1)
+set(LED_PIN 2)
 
 set(COMMUNICATION_WITH_PS_INTERVAL 200000) # microseconds
 
