@@ -29,30 +29,30 @@ static int32_t readUart(uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, b
         int timeout = first_byte_from_msg ? COMMUNICATION_WITH_PS_INTERVAL : PicoController::GET_ONE_BYTE_TIMEOUT;
 
         if (!uart_is_readable_within_us(UART_ID, timeout)) {
-            gpio_put(PICO_DEFAULT_LED_PIN, 0);
+            gpio_put(LED_PIN, 0);
             return i;
         }
 
         if (first_byte_from_msg) {
-            gpio_put(PICO_DEFAULT_LED_PIN, 1);
+            gpio_put(LED_PIN, 1);
         }
 
         uart_read_blocking(UART_ID, buf + i, 1);
     }
 
     if (last_byte_from_msg)
-        gpio_put(PICO_DEFAULT_LED_PIN, 0);
+        gpio_put(LED_PIN, 0);
 
     return count;
 }
 
 static int32_t writeUart(const uint8_t *buf, uint16_t count, int32_t byte_timeout_ms, void *arg) {
 
-    gpio_put(PICO_DEFAULT_LED_PIN, 1);
+    gpio_put(LED_PIN, 1);
 
     uart_write_blocking(UART_ID, buf, count);
 
-    gpio_put(PICO_DEFAULT_LED_PIN, 0);
+    gpio_put(LED_PIN, 0);
 
     return count;
 }

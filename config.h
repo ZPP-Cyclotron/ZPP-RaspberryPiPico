@@ -5,7 +5,7 @@
 #define BAUD_RATE 38400
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
-#define LED_PIN 2
+#define LED_PIN 5
 
 #define COMMUNICATION_WITH_PS_INTERVAL 200000
 #define POWER_SUPPLY 200
